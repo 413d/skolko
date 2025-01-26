@@ -1,15 +1,14 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from '@/app';
 
 const root = document.getElementById('root');
 if (root === null) {
-  throw new Error('Root element not found')
+  throw new Error('Root element not found');
 }
 
 createRoot(root).render(
   <StrictMode>
-    <main>
-      <h1>Skolko</h1>
-    </main>
+    <App />
   </StrictMode>,
-)
+);
