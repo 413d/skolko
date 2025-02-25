@@ -52,6 +52,13 @@ export default tseslint.config(
       '@typescript-eslint/consistent-indexed-object-style': ['error', 'record'],
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       '@typescript-eslint/no-empty-interface': ['error', { allowSingleExtends: true }],
+      '@typescript-eslint/no-confusing-void-expression': [
+        'error',
+        {
+          ignoreArrowShorthand: true,
+          ignoreVoidOperator: true,
+        },
+    ],
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
