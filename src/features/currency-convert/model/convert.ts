@@ -5,7 +5,7 @@ import { getStorageData, setStorageData } from '@/shared/lib/storage';
 
 import { DEFAULT_CURRENCY_FIAT, type CurrencyCode } from '@/entities/currency';
 
-import { type ExchangeRates } from './model';
+import type { ExchangeRates } from './exchange-rates';
 
 type ValueToConvert = {
   amount: number;
@@ -32,7 +32,7 @@ const convert = (
 const VALUES_STORAGE_KEY = 'values-to-convert';
 const getSavedValues = () => getStorageData<ValueToConvert[]>(VALUES_STORAGE_KEY);
 
-export const useConvertModel = (exchangeRates: ExchangeRates | undefined) => {
+export const useConvert = (exchangeRates: ExchangeRates | undefined) => {
   const [values, setValues] = useState<ValueToConvert[]>(
     () => getSavedValues() ?? [createValueToConvert()],
   );

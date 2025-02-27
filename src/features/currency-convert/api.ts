@@ -1,4 +1,4 @@
-import type { ExchangeRates } from './model';
+import type { ExchangeRates } from './model/exchange-rates';
 
 const API_URL = import.meta.env.VITE_EXCHANGE_RATES_API_URL;
 

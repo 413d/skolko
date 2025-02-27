@@ -1,8 +1,19 @@
 import { useState, useEffect } from 'react';
+
 import { getStorageData, setStorageData } from '@/shared/lib/storage';
-import type { ExchangeRates } from './model';
-import { getExchangeRates } from './api';
 import { withRetryAndTimeout } from '@/shared/lib/retry';
+
+import type { CurrencyCode } from '@/entities/currency';
+
+import { getExchangeRates } from '../api';
+
+/** Price of currency to base currency ratio */
+export type CurrencyRate = number;
+
+/**
+ * Exchange rates with currency code as the key and the rate as the value
+ */
+export type ExchangeRates = Record<CurrencyCode, CurrencyRate>;
 
 const CACHE_KEY = 'exchange-rates';
 const CACHE_DURATION = 1000 * 60 * 60 * 4; // 4 hours

@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 
-import { type CurrencyCode } from '@/entities/currency';
-import { useExchangeRates } from '../use-exchange-rates';
-import { useConvertModel } from '../use-convert-model';
+import type { CurrencyCode } from '@/entities/currency';
+
+import { useExchangeRates } from '../model/exchange-rates';
+import { useConvert } from '../model/convert';
 import { CurrencyInput } from './currency-input';
 
 export const CurrenciesConverter = () => {
@@ -21,7 +22,7 @@ export const CurrenciesConverter = () => {
     handleValueChange,
     addValue,
     deleteValue,
-  } = useConvertModel(exchangeRates);
+  } = useConvert(exchangeRates);
 
   return (
     <div>
