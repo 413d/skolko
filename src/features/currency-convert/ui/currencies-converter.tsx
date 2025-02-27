@@ -9,6 +9,7 @@ import { CurrencyInput } from './currency-input';
 export const CurrenciesConverter = () => {
   const {
     data: exchangeRates,
+    fetchedAt: exchangeRatesFetchDate,
     isLoading: exchangeRatesLoading,
     error: exchangeRatesError,
   } = useExchangeRates();
@@ -27,6 +28,14 @@ export const CurrenciesConverter = () => {
   return (
     <div>
       {exchangeRatesError && <p>{exchangeRatesError}</p>}
+
+      {exchangeRatesFetchDate && (
+        <p>
+          <small>
+            {exchangeRatesFetchDate.toLocaleString()}
+          </small>
+        </p>
+      )}
 
       {exchangeRatesLoading && exchangeRates === undefined
         ? <CurrencyConverterSkeleton count={values.length || 2} />
