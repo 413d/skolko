@@ -1,6 +1,7 @@
 import { type ReactNode, memo, useEffect, useRef } from 'react';
 import { debounce } from '@/shared/lib/delay';
-import type { CurrencyCode } from '@/entities/currency';
+import { CurrencySelect, type CurrencyCode } from '@/entities/currency';
+import { cn, Input } from '@/shared/ui';
 
 type Props = {
   currencies: CurrencyCode[];
@@ -8,6 +9,7 @@ type Props = {
   currency: CurrencyCode;
   onAmountChange: (newAmount: number) => void;
   onCurrencyChange: (newCurrency: CurrencyCode) => void;
+  className?: string;
   children?: ReactNode;
 }
 
@@ -17,6 +19,7 @@ export const CurrencyInput = memo<Props>(({
   currency,
   onAmountChange,
   onCurrencyChange,
+  className,
   children,
 }) => {
   const amountRef = useRef<HTMLInputElement>(null);
@@ -37,32 +40,29 @@ export const CurrencyInput = memo<Props>(({
     }
   }, 500);
 
-  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newCurrency = e.target.value || currency;
+  const handleCurrencyChange = (newCurrency: CurrencyCode) => {
     if (newCurrency === currency) return;
     onCurrencyChange(newCurrency);
   };
 
   return (
-    <div className="flex gap-2">
-      <input
+    <div className={cn('flex space-x-2', className)}>
+      <Input
         ref={amountRef}
         type="number"
         step={0.0001}
         min={0}
         defaultValue={amount}
         onChange={handleAmountChange}
+        aria-label="Amount"
       />
-      <select
-        value={currency}
-        onChange={handleCurrencyChange}
-      >
-        {currencies.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
+
+      <CurrencySelect
+        currencies={currencies}
+        currency={currency}
+        onSelectCurrency={handleCurrencyChange}
+        aria-label="Currency"
+      />
 
       {children}
     </div>
@@ -76,3 +76,11 @@ export const CurrencyInput = memo<Props>(({
 });
 
 CurrencyInput.displayName = 'CurrencyInput';
+
+export const CurrencyInputSkeleton = ({ className }: { className?: string }) => (
+  <div className={cn('flex space-x-2 select-none cursor-wait', className)}>
+    <div className="h-9 flex-grow bg-primary/10 rounded-md animate-pulse" />
+    <div className="h-9 w-20 bg-primary/10 rounded-md animate-pulse" />
+    <div className="h-9 w-9 bg-primary/10 rounded-md animate-pulse" />
+  </div>
+);

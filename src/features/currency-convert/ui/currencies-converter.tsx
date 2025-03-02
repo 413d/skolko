@@ -1,10 +1,17 @@
 import { useMemo } from 'react';
+import { AlertCircle, Loader2, Trash2 } from 'lucide-react';
 
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+} from '@/shared/ui';
 import type { CurrencyCode } from '@/entities/currency';
 
 import { useExchangeRates } from '../model/exchange-rates';
 import { useConvert } from '../model/convert';
-import { CurrencyInput } from './currency-input';
+import { CurrencyInput, CurrencyInputSkeleton } from './currency-input';
 
 export const CurrenciesConverter = () => {
   const {
@@ -27,13 +34,19 @@ export const CurrenciesConverter = () => {
 
   return (
     <div>
-      {exchangeRatesError && <p>{exchangeRatesError}</p>}
+      {exchangeRatesError && (
+        <Alert variant={exchangeRates ? 'default' : 'destructive'} className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>{exchangeRates ? 'Used old exchange rates' : 'Error'}</AlertTitle>
+          <AlertDescription>
+            {exchangeRatesError}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {exchangeRatesFetchDate && (
-        <p>
-          <small>
-            {exchangeRatesFetchDate.toLocaleString()}
-          </small>
+        <p className="mb-2 text-xs text-muted-foreground text-right select-none cursor-none">
+          {exchangeRatesFetchDate.toLocaleString()}
         </p>
       )}
 
@@ -42,31 +55,50 @@ export const CurrenciesConverter = () => {
         : values.map((v, i) => exchangeRates?.[v.currency] !== undefined && (
           <CurrencyInput
             key={v.currency + String(i)}
+            className="mb-4"
             currencies={currencies}
             amount={v.amount}
             currency={v.currency}
             onAmountChange={(newAmount) => handleValueChange(newAmount, v.currency, i)}
             onCurrencyChange={(newCurrency) => handleValueChange(v.amount, newCurrency, i)}
           >
-            {i > 0 && (<button title="Delete" onClick={() => deleteValue(i)}>X</button>)}
+            <Button
+              className={exchangeRatesLoading ? 'cursor-wait' : 'cursor-pointer'}
+              variant="destructive"
+              size="icon"
+              title="Delete"
+              disabled={i === 0 || exchangeRatesLoading}
+              aria-label={`Delete currency ${v.currency}`}
+              onClick={() => deleteValue(i)}
+            >
+              {exchangeRatesLoading ? <Loader2 className="animate-spin" /> : <Trash2 />}
+            </Button>
           </CurrencyInput>
         ))
       }
 
-      <button
+      <Button
+        className="w-full cursor-pointer"
+        variant="default"
+        size="lg"
         disabled={currencies.length === 0 || exchangeRatesLoading}
+        aria-label="Add currency"
         onClick={addValue}
-      >Add currency</button>
+      >{exchangeRatesLoading ? (<>
+          <Loader2 className="animate-spin" />
+          <span>The currencies are loading</span>
+        </>) : 'Add currency'}
+      </Button>
     </div>
   );
 };
 
 function CurrencyConverterSkeleton({ count = 2 }: { count?: number }) {
   return (
-    <div className="animate-pulse">
+    <>
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="h-12 bg-gray-200 rounded mb-4" />
+        <CurrencyInputSkeleton key={index} className="mb-4" />
       ))}
-    </div>
+    </>
   );
 };
