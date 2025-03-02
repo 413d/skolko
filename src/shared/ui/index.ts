@@ -1,4 +1,5 @@
 export * from './utils';
+export * from './error-boundary';
 
 export * from './components/alert';
 export * from './components/button';
