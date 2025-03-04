@@ -1,12 +1,17 @@
 import { appConfig } from '@/shared/config';
 import { Alert, AlertDescription, AlertTitle, Button, ErrorBoundary } from '@/shared/ui';
+
 import { ConvertPage } from '@/pages/convert';
 import { ThemeProvider, ThemeToggle } from '@/features/theming';
+
 import './app.css';
 
 export const App = () => (
   <ThemeProvider defaultTheme="dark">
     <header className="p-2 border-b border-secondary flex justify-between items-center">
+      <a href="/">
+        <img className="w-10 dark:invert" src="/skolko.svg" alt={appConfig.title} />
+      </a>
       <h1 className="text-xl font-mono">{ appConfig.title }</h1>
       <ErrorBoundary fallback={' '}>
         <ThemeToggle />
