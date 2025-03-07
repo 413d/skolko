@@ -13,6 +13,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'skolko.svg'],
       manifest: {
         name: `${APP_NAME}: Currency Converter`,
         short_name: APP_NAME,
@@ -49,6 +50,12 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
+      },
+      // workbox: {
+      //   globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+      // },
+      devOptions: {
+        enabled: process.env.SW_DEV === 'true',
       },
     }),
   ],

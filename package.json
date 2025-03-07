@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:pwa": "rm -rf dev-dist && SW_DEV=true vite --force",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
