@@ -67,7 +67,7 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
               variant="destructive"
               size="icon"
               title="Delete"
-              disabled={i === 0 || exchangeRatesLoading}
+              disabled={exchangeRatesLoading}
               aria-label={`Delete currency ${v.currency}`}
               onClick={() => deleteValue(i)}
             >
