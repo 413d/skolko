@@ -30,7 +30,11 @@ const convert = (
 };
 
 const VALUES_STORAGE_KEY = 'values-to-convert';
-const getSavedValues = () => getStorageData<ValueToConvert[]>(VALUES_STORAGE_KEY);
+const getSavedValues = () => {
+  const data = getStorageData<ValueToConvert[]>(VALUES_STORAGE_KEY);
+  if (!Array.isArray(data)) return undefined;
+  return data.filter((v) => typeof v === 'object' && typeof v.amount === 'number' && typeof v.currency === 'string');
+};
 
 export const useConvert = (exchangeRates: ExchangeRates | undefined) => {
   const [values, setValues] = useState<ValueToConvert[]>(
@@ -80,7 +84,9 @@ export const useConvert = (exchangeRates: ExchangeRates | undefined) => {
     const currency = currencies[idx];
 
     setValues((prevValues) => {
-      const toConvert = prevValues[0] || createValueToConvert();
+      if (prevValues.length === 0) return [createValueToConvert(0, currency)];
+
+      const [toConvert] = prevValues;
       const amount = roundTo(
         convert(toConvert.amount, toConvert.currency, currency, exchangeRates),
         4,
