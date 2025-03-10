@@ -3,8 +3,10 @@ import { Alert, AlertDescription, AlertTitle } from './components/alert';
 import { AlertCircle } from 'lucide-react';
 
 type Props = {
-  fallback?: ReactNode;
   children: ReactNode;
+  title?: ReactNode;
+  description?: ReactNode;
+  fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
@@ -33,12 +35,14 @@ export class ErrorBoundary extends Component<Props, State> {
       return this.props.fallback ?? (
         <Alert variant="destructive" className="space-y-2">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Something went wrong</AlertTitle>
+          <AlertTitle>{this.props.title ?? 'Something went wrong 💥'}</AlertTitle>
           <AlertDescription>
-            <details>
-              <summary>Error details</summary>
-              <pre>{this.state.error?.toString()}</pre>
-            </details>
+            {this.props.description ?? (
+              <details>
+                <summary>Error details</summary>
+                <pre>{this.state.error?.toString()}</pre>
+              </details>
+            )}
           </AlertDescription>
         </Alert>
       );
