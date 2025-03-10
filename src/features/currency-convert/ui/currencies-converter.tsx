@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { type FC, useMemo } from 'react';
 import { AlertCircle, Loader2, Trash2 } from 'lucide-react';
 
 import {
@@ -13,7 +13,7 @@ import { useExchangeRates } from '../model/exchange-rates';
 import { useConvert } from '../model/convert';
 import { CurrencyInput, CurrencyInputSkeleton } from './currency-input';
 
-export const CurrenciesConverter = () => {
+export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) => {
   const {
     data: exchangeRates,
     fetchedAt: exchangeRatesFetchDate,
@@ -33,7 +33,7 @@ export const CurrenciesConverter = () => {
   } = useConvert(exchangeRates);
 
   return (
-    <div>
+    <div className={className}>
       {exchangeRatesError && (
         <Alert variant={exchangeRates ? 'default' : 'destructive'} className="mb-4">
           <AlertCircle className="h-4 w-4" />
