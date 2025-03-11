@@ -11,7 +11,7 @@ import logo from '/skolko.svg';
 export const App = () => (
   <ThemeProvider defaultTheme="dark">
     <header className="p-2 flex justify-between items-center border-b border-secondary">
-      <a href="/" title={appConfig.title}>
+      <a href={appConfig.baseUrl} title={appConfig.title}>
         <img className="w-10 dark:invert" src={logo} alt={appConfig.title} />
       </a>
 
