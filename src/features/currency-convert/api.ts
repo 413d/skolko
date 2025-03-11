@@ -1,6 +1,7 @@
+import { valueOrThrow } from '@/shared/lib/validation';
 import type { ExchangeRates } from './model/exchange-rates';
 
-const API_URL = import.meta.env.VITE_EXCHANGE_RATES_API_URL;
+const API_URL = valueOrThrow(import.meta.env.VITE_EXCHANGE_RATES_API_URL, 'VITE_EXCHANGE_RATES_API_URL');
 
 const ERROR_RESPONSE = 'Invalid exchange rates: response doesn\'t contain rates';
 const ERROR_RATES = 'Invalid exchange rates: one or more rates are not numbers';
