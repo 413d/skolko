@@ -36,6 +36,9 @@ jobs:
         run: npm run build
         env:
           BASE_URL: /${{ env.REPO_NAME }}/
+          VITE_APP_TITLE: ${{ vars.VITE_APP_TITLE }}
+          VITE_EXCHANGE_RATES_API_URL: ${{ vars.VITE_EXCHANGE_RATES_API_URL }}
+          VITE_EXCHANGE_RATES_CACHE_TTL: ${{ vars.VITE_EXCHANGE_RATES_CACHE_TTL }}
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
