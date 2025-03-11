@@ -6,6 +6,7 @@ import { withRetryAndTimeout } from '@/shared/lib/retry';
 import type { CurrencyCode } from '@/entities/currency';
 
 import { getExchangeRates } from '../api';
+import { valueOrDefault } from '@/shared/lib/validation';
 
 /** Price of currency to base currency ratio */
 export type CurrencyRate = number;
@@ -16,7 +17,7 @@ export type CurrencyRate = number;
 export type ExchangeRates = Record<CurrencyCode, CurrencyRate>;
 
 const CACHE_KEY = 'exchange-rates';
-const CACHE_DURATION = 1000 * 60 * 60 * 4; // 4 hours
+const CACHE_DURATION = Number(valueOrDefault(import.meta.env.VITE_EXCHANGE_RATES_CACHE_TTL, '3600000'));
 type CacheData = {
   timestamp: number;
   rates: ExchangeRates;
