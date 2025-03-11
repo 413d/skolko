@@ -8,6 +8,7 @@ const APP_NAME = process.env.VITE_APP_TITLE ?? 'Skolko';
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.REPO_NAME,
   plugins: [
     react(),
     tailwindcss(),
