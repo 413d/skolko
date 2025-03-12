@@ -63,15 +63,14 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
             onCurrencyChange={(newCurrency) => handleValueChange(v.amount, newCurrency, i)}
           >
             <Button
-              className={exchangeRatesLoading ? 'cursor-wait' : 'cursor-pointer'}
+              className="cursor-pointer"
               variant="destructive"
               size="icon"
               title="Delete"
-              disabled={exchangeRatesLoading}
               aria-label={`Delete currency ${v.currency}`}
-              onClick={() => deleteValue(i)}
+              onClick={() => !exchangeRatesLoading && deleteValue(i)}
             >
-              {exchangeRatesLoading ? <Loader2 className="animate-spin" /> : <Trash2 />}
+              <Trash2 />
             </Button>
           </CurrencyInput>
         ))
