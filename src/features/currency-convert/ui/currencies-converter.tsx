@@ -1,6 +1,7 @@
 import { type FC, useMemo } from 'react';
 import { AlertCircle, Loader2, Trash2 } from 'lucide-react';
 
+import { dateToCommonString } from '@/shared/lib/date';
 import {
   Alert,
   AlertDescription,
@@ -46,7 +47,7 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
 
       {exchangeRatesFetchDate && (
         <p className="mb-2 text-xs text-muted-foreground text-right select-none cursor-none">
-          {exchangeRatesFetchDate.toLocaleString()}
+          {dateToCommonString(exchangeRatesFetchDate)}
         </p>
       )}
 
