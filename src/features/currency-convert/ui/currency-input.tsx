@@ -4,6 +4,8 @@ import { debounce } from '@/shared/lib/delay';
 import { CurrencySelect, type CurrencyCode } from '@/entities/currency';
 import { cn, Input } from '@/shared/ui';
 
+const amountToInputValue = (amount: number) => amount === 0 ? '' : String(amount);
+
 type Props = {
   currencies: CurrencyCode[];
   amount: number;
@@ -26,7 +28,7 @@ export const CurrencyInput = memo<Props>(({
   const amountRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (!amountRef.current) return;
-    amountRef.current.value = String(amount);
+    amountRef.current.value = amountToInputValue(amount);
   }, [amount]);
 
   const handleAmountChange = debounce(() => {
@@ -35,7 +37,7 @@ export const CurrencyInput = memo<Props>(({
     const newAmount = Number(amountRef.current.value);
 
     if (Number.isNaN(newAmount) || newAmount < 0) {
-      amountRef.current.value = String(amount);
+      amountRef.current.value = amountToInputValue(amount);
     } else if (newAmount !== amount) {
       onAmountChange(newAmount);
     }
@@ -54,18 +56,19 @@ export const CurrencyInput = memo<Props>(({
           type="number"
           step={0.0001}
           min={0}
-          defaultValue={amount}
+          placeholder="0"
+          defaultValue={amountToInputValue(amount)}
           onChange={handleAmountChange}
           aria-label="Amount"
           className="pr-10 w-full min-w-px"
         />
-        <button
+        {amount > 0 && (<button
           type="button"
           className="absolute inset-y-0 right-0 pr-3 focus:outline-none cursor-pointer"
           onClick={() => onAmountChange(0)}
         >
           <CircleX className="w-5 opacity-50 hover:opacity-100" />
-        </button>
+        </button>)}
       </div>
 
       <CurrencySelect
