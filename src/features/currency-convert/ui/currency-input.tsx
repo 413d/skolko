@@ -1,4 +1,5 @@
 import { type ReactNode, memo, useEffect, useRef } from 'react';
+import { CircleX } from 'lucide-react';
 import { debounce } from '@/shared/lib/delay';
 import { CurrencySelect, type CurrencyCode } from '@/entities/currency';
 import { cn, Input } from '@/shared/ui';
@@ -47,15 +48,25 @@ export const CurrencyInput = memo<Props>(({
 
   return (
     <div className={cn('flex space-x-2', className)}>
-      <Input
-        ref={amountRef}
-        type="number"
-        step={0.0001}
-        min={0}
-        defaultValue={amount}
-        onChange={handleAmountChange}
-        aria-label="Amount"
-      />
+      <div className="relative flex-grow">
+        <Input
+          ref={amountRef}
+          type="number"
+          step={0.0001}
+          min={0}
+          defaultValue={amount}
+          onChange={handleAmountChange}
+          aria-label="Amount"
+          className="pr-10 w-full min-w-px"
+        />
+        <button
+          type="button"
+          className="absolute inset-y-0 right-0 pr-3 focus:outline-none cursor-pointer"
+          onClick={() => onAmountChange(0)}
+        >
+          <CircleX className="w-5 opacity-50 hover:opacity-100" />
+        </button>
+      </div>
 
       <CurrencySelect
         currencies={currencies}
