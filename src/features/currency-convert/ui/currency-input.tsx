@@ -50,7 +50,7 @@ export const CurrencyInput = memo<Props>(({
 
   return (
     <div className={cn('flex space-x-2', className)}>
-      <div className="relative flex-grow">
+      <div className="relative grow">
         <Input
           ref={amountRef}
           type="number"
@@ -91,10 +91,12 @@ export const CurrencyInput = memo<Props>(({
 
 CurrencyInput.displayName = 'CurrencyInput';
 
-export const CurrencyInputSkeleton = ({ className }: { className?: string }) => (
+export const CurrencyInputSkeleton = ({ className, childrenCount = 1 }: { className?: string; childrenCount?: number }) => (
   <div className={cn('flex space-x-2 select-none cursor-wait', className)}>
-    <div className="h-9 flex-grow bg-primary/10 rounded-md animate-pulse" />
+    <div className="h-9 grow bg-primary/10 rounded-md animate-pulse" />
     <div className="h-9 w-20 bg-primary/10 rounded-md animate-pulse" />
-    <div className="h-9 w-9 bg-primary/10 rounded-md animate-pulse" />
+    {Array.from({ length: childrenCount }).map((_, index) => (
+      <div className="h-9 w-9 bg-primary/10 rounded-md animate-pulse" key={index} />
+    ))}
   </div>
 );

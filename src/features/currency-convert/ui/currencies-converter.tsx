@@ -1,5 +1,6 @@
 import { type FC, useMemo } from 'react';
-import { AlertCircle, Loader2, Trash2 } from 'lucide-react';
+import { AlertCircle, Loader2, Trash2, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { dateToCommonString } from '@/shared/lib/date';
 import {
@@ -13,6 +14,8 @@ import type { CurrencyCode } from '@/entities/currency';
 import { useExchangeRates } from '../model/exchange-rates';
 import { useConvert } from '../model/convert';
 import { CurrencyInput, CurrencyInputSkeleton } from './currency-input';
+
+const canCopy = () => typeof navigator !== 'undefined' && 'clipboard' in navigator;
 
 export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) => {
   const {
@@ -32,6 +35,21 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
     addValue,
     deleteValue,
   } = useConvert(exchangeRates);
+
+  const isCopySupported = canCopy();
+  const copyValue = (amount: number, currency: CurrencyCode) => {
+    const textToCopy = `${String(amount)} ${currency}`;
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+        toast.info('Copied to clipboard', {
+          description: textToCopy,
+        });
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to copy:', error);
+        toast.error('Failed to copy to clipboard');
+      });
+  };
 
   return (
     <div className={className}>
@@ -63,6 +81,18 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
             onAmountChange={(newAmount) => handleValueChange(newAmount, v.currency, i)}
             onCurrencyChange={(newCurrency) => handleValueChange(v.amount, newCurrency, i)}
           >
+            {isCopySupported && (
+              <Button
+                className="cursor-pointer"
+                variant="outline"
+                size="icon"
+                title="Copy amount and currency"
+                aria-label="Copy amount and currency"
+                onClick={() => copyValue(v.amount, v.currency)}
+              >
+                <Copy />
+              </Button>
+            )}
             <Button
               className="cursor-pointer"
               variant="destructive"
@@ -94,10 +124,12 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
 };
 
 function CurrencyConverterSkeleton({ count = 2 }: { count?: number }) {
+  const childrenCount = canCopy() ? 2 : 1;
+
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (
-        <CurrencyInputSkeleton key={index} className="mb-4" />
+        <CurrencyInputSkeleton key={index} className="mb-4" childrenCount={childrenCount} />
       ))}
     </>
   );
