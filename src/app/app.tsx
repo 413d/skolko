@@ -1,38 +1,45 @@
 import './app.css';
 
 import { appConfig } from '@/shared/config';
-import { Button, ErrorBoundary } from '@/shared/ui';
+import { Button, ErrorBoundary, Toaster } from '@/shared/ui';
 
-import { ThemeProvider, ThemeToggle } from '@/features/theming';
+import { ThemeToggle, useTheme } from '@/features/theming';
 import { ConvertPage } from '@/pages/convert';
+
+import { Providers } from './providers';
 
 import logo from '/skolko.svg';
 
-export const App = () => (
-  <ThemeProvider defaultTheme="dark">
-    <header className="p-2 flex justify-between items-center border-b border-secondary">
-      <a href={appConfig.baseUrl} title={appConfig.title}>
-        <img className="w-10 dark:invert" src={logo} alt={appConfig.title} />
-      </a>
+export const App = () => {
+  const { theme } = useTheme();
 
-      <h1 className="text-2xl font-mono tracking-wider">{ appConfig.title }</h1>
+  return (
+    <Providers>
+      <header className="p-2 flex justify-between items-center border-b border-secondary">
+        <a href={appConfig.baseUrl} title={appConfig.title}>
+          <img className="w-10 dark:invert" src={logo} alt={appConfig.title} />
+        </a>
 
-      <ErrorBoundary fallback={' '}>
-        <ThemeToggle />
-      </ErrorBoundary>
-    </header>
-    <main className="p-2">
-      <ErrorBoundary description={appConfig.isProd ? (
-        <Button
-          className="cursor-pointer"
-          size="lg"
-          onClick={() => typeof window !== 'undefined' && window.location.reload()}
-        >
+        <h1 className="text-2xl font-mono tracking-wider">{ appConfig.title }</h1>
+
+        <ErrorBoundary fallback={' '}>
+          <ThemeToggle />
+        </ErrorBoundary>
+      </header>
+      <main className="p-2">
+        <ErrorBoundary description={appConfig.isProd ? (
+          <Button
+            className="cursor-pointer"
+            size="lg"
+            onClick={() => typeof window !== 'undefined' && window.location.reload()}
+          >
           Retry
-        </Button>
-      ) : undefined}>
-        <ConvertPage />
-      </ErrorBoundary>
-    </main>
-  </ThemeProvider>
-);
+          </Button>
+        ) : undefined}>
+          <ConvertPage />
+        </ErrorBoundary>
+      </main>
+      <Toaster theme={theme} />
+    </Providers>
+  );
+};
