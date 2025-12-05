@@ -1,4 +1,5 @@
-import { type FC, useMemo } from 'react';
+import { type FC, useEffect, useMemo } from 'react';
+import { useUnit } from 'effector-react';
 import { AlertCircle, Loader2, Trash2, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -11,30 +12,81 @@ import {
 } from '@/shared/ui';
 import type { CurrencyCode } from '@/entities/currency';
 
-import { useExchangeRates } from '../model/exchange-rates';
-import { useConvert } from '../model/convert';
 import { CurrencyInput, CurrencyInputSkeleton } from './currency-input';
+import {
+  $rates,
+  $isRatesLoading,
+  $ratesError,
+  $ratesFetchedAt,
+  $currencies,
+  ratesInited,
+} from '../model/rates';
+import {
+  lineAdded,
+  lineDeleted,
+  currencyChanged,
+  amountChanged,
+  ratesUpdated,
+  converterStarted,
+  $lines,
+  $usedCurrencies,
+} from '../model/converter';
+
 
 const canCopy = () => typeof navigator !== 'undefined' && 'clipboard' in navigator;
 
 export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) => {
-  const {
-    data: exchangeRates,
-    fetchedAt: exchangeRatesFetchDate,
-    isLoading: exchangeRatesLoading,
-    error: exchangeRatesError,
-  } = useExchangeRates();
-  const currencies = useMemo<CurrencyCode[]>(
-    () => Object.keys(exchangeRates ?? {}),
-    [exchangeRates],
-  );
+  const [
+    rates,
+    isRatesLoading,
+    ratesErrorMessage,
+    ratesFetchDate,
+    currencies,
+    initRates,
+  ] = useUnit([
+    $rates,
+    $isRatesLoading,
+    $ratesError,
+    $ratesFetchedAt,
+    $currencies,
+    ratesInited,
+  ] as const);
+  useEffect(() => {
+    initRates();
+  }, [initRates]);
 
-  const {
-    values,
-    handleValueChange,
-    addValue,
-    deleteValue,
-  } = useConvert(exchangeRates);
+  const [
+    onNewLine,
+    onDeleteLine,
+    onCurrencyChange,
+    onAmountChange,
+    onRatesUpdate,
+    onConverterStart,
+    lines,
+    usedCurrencies,
+  ] = useUnit([
+    lineAdded,
+    lineDeleted,
+    currencyChanged,
+    amountChanged,
+    ratesUpdated,
+    converterStarted,
+    $lines,
+    $usedCurrencies,
+  ] as const);
+  useEffect(() => {
+    onConverterStart({ rates });
+  }, [onConverterStart, rates]);
+  useEffect(() => {
+    if (rates !== undefined) {
+      onRatesUpdate(rates);
+    }
+  }, [onRatesUpdate, rates]);
+
+  const availableCurrencies = useMemo(
+    () => currencies.filter((c) => !usedCurrencies.has(c)),
+    [currencies, usedCurrencies],
+  );
 
   const isCopySupported = canCopy();
   const copyValue = (amount: number, currency: CurrencyCode) => {
@@ -53,33 +105,41 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
 
   return (
     <div className={className}>
-      {exchangeRatesError && (
-        <Alert variant={exchangeRates ? 'default' : 'destructive'} className="mb-4">
+      {ratesErrorMessage && (
+        <Alert variant={rates ? 'default' : 'destructive'} className="mb-4">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{exchangeRates ? 'Used old exchange rates' : 'Error'}</AlertTitle>
+          <AlertTitle>{rates ? 'Used old exchange rates' : 'Error'}</AlertTitle>
           <AlertDescription>
-            {exchangeRatesError}
+            {ratesErrorMessage}
           </AlertDescription>
         </Alert>
       )}
 
-      {exchangeRatesFetchDate && (
+      {ratesFetchDate && (
         <p className="mb-2 text-xs text-muted-foreground text-right select-none cursor-none">
-          {dateToCommonString(exchangeRatesFetchDate)}
+          {dateToCommonString(ratesFetchDate)}
         </p>
       )}
 
-      {exchangeRatesLoading && exchangeRates === undefined
-        ? <CurrencyConverterSkeleton count={values.length || 2} />
-        : values.map((v, i) => exchangeRates?.[v.currency] !== undefined && (
+      {isRatesLoading && rates === undefined
+        ? <CurrencyConverterSkeleton count={lines.length || 2} />
+        : lines.map((v, i) => rates?.[v.currency] !== undefined && (
           <CurrencyInput
             key={v.currency + String(i)}
             className="mb-4"
-            currencies={currencies}
+            currencies={availableCurrencies}
             amount={v.amount}
             currency={v.currency}
-            onAmountChange={(newAmount) => handleValueChange(newAmount, v.currency, i)}
-            onCurrencyChange={(newCurrency) => handleValueChange(v.amount, newCurrency, i)}
+            onAmountChange={(newAmount) => onAmountChange({
+              line: v,
+              newAmount,
+              rates,
+            })}
+            onCurrencyChange={(newCurrency) => onCurrencyChange({
+              line: v,
+              newCurrency,
+              rates,
+            })}
           >
             {isCopySupported && (
               <Button
@@ -99,7 +159,7 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
               size="icon"
               title="Delete"
               aria-label={`Delete currency ${v.currency}`}
-              onClick={() => !exchangeRatesLoading && deleteValue(i)}
+              onClick={() => !isRatesLoading && onDeleteLine(v)}
             >
               <Trash2 />
             </Button>
@@ -107,18 +167,18 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
         ))
       }
 
-      <Button
+      {rates && <Button
         className="w-full cursor-pointer"
         variant="default"
         size="lg"
-        disabled={currencies.length === 0 || exchangeRatesLoading}
+        disabled={currencies.length === 0 || isRatesLoading}
         aria-label="Add currency"
-        onClick={addValue}
-      >{exchangeRatesLoading ? (<>
+        onClick={() => onNewLine(rates)}
+      >{isRatesLoading ? (<>
           <Loader2 className="animate-spin" />
           <span>The currencies are loading</span>
         </>) : 'Add currency'}
-      </Button>
+      </Button>}
     </div>
   );
 };
