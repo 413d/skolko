@@ -1,4 +1,4 @@
-import { createStore, createEffect, createEvent, sample, combine } from 'effector';
+import { createStore, createEffect, createEvent, sample } from 'effector';
 
 import { getStorageData, setStorageData } from '@/shared/lib/storage';
 import { withRetryAndTimeout } from '@/shared/lib/retry';
@@ -106,16 +106,10 @@ sample({
   target: getRatesFromCacheFx,
 });
 
-const $currencies = combine(
-  $rates,
-  (rates): CurrencyCode[] => rates === undefined ? [] : Object.keys(rates),
-);
-
 export {
   $rates,
   $isRatesLoading,
   $ratesError,
   $ratesFetchedAt,
-  $currencies,
   ratesInited,
 };

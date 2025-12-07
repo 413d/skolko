@@ -146,24 +146,27 @@ $lines.on(amountChanged, (lines, payload) => lines.map((l) => {
   };
 }));
 
-const ratesUpdated = createEvent<Rates>();
-sample({
-  clock: ratesUpdated,
-  source: $lines,
-  filter: (lines) => lines.length > 1,
-  fn: recalculateLines,
-  target: $lines,
-});
-
-const converterStarted = createEvent<{
+const ratesUpdated = createEvent<{
   rates?: Rates;
 }>();
+// first load (init)
 sample({
-  clock: converterStarted,
+  clock: ratesUpdated,
   source: $lines,
   filter: (lines) => !lines.length,
   fn: (_, payload) => payload.rates,
   target: getLinesFx,
+});
+// subsequent updates
+sample({
+  clock: ratesUpdated,
+  source: $lines,
+  filter: (lines, { rates }) => lines.length > 1 && rates !== undefined,
+  fn: (lines, { rates }) => {
+    if (typeof rates !== 'object') return lines;
+    return recalculateLines(lines, rates);
+  },
+  target: $lines,
 });
 
 export {
@@ -172,7 +175,6 @@ export {
   currencyChanged,
   amountChanged,
   ratesUpdated,
-  converterStarted,
   $lines,
   $usedCurrencies,
 };
