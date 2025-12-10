@@ -45,9 +45,9 @@ export const CurrencyLines = ({ rates, isRatesLoading }: Props) => {
 
   const { canCopy, copy } = useCopy();
 
-  if (isRatesLoading && rates === undefined) {
+  if ((isRatesLoading && rates === undefined) || lines === undefined) {
     return <CurrencyLinesSkeleton
-      lineCount={lines.length || 2}
+      lineCount={Math.max(2, lines?.length ?? 0)}
       canCopy={canCopy}
     />;
   }
