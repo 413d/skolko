@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 
 import { Button, cn } from '@/shared/ui';
 
-import { lineAdded } from '../model/converter';
+import { $lines, lineAdded } from '../model/converter';
 
 const title = 'Add currency';
 
@@ -18,7 +18,14 @@ export const CurrencyLineAdd = ({
   isRatesLoading,
   className,
 }: Props) => {
-  const onNewLine = useUnit(lineAdded);
+  const [usedCount, onNewLine] = useUnit([
+    $lines.map((lines) => lines.length),
+    lineAdded,
+  ] as const);
+
+  const allCount = Object.keys(rates).length;
+
+  if (usedCount >= allCount) return null;
 
   return (
     <Button
