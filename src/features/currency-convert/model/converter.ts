@@ -1,8 +1,8 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { debounce } from 'patronum';
 
 import { getRandomInt, roundTo } from '@/shared/lib/math';
 import { getStorageData, setStorageData } from '@/shared/lib/storage';
-import { debounce } from '@/shared/lib/delay';
 
 import { type CurrencyCode, DEFAULT_CURRENCY_FIAT } from '@/entities/currency';
 
@@ -49,14 +49,16 @@ const recalculateLines = (lines: Line[], rates: Rates) => lines.reduce<Line[]>(
 );
 
 const LINES_STORAGE_KEY = 'converter-lines';
+
 const getLinesFromStorage = (): Line[] => {
   const data = getStorageData(LINES_STORAGE_KEY);
   if (!Array.isArray(data)) return [];
   return data.filter(isValidLine);
 };
-const updateLinesInStorage = debounce((lines?: Line[]) => {
+
+const saveLinesInStorageFx = createEffect((lines?: Line[]) => {
   setStorageData(LINES_STORAGE_KEY, lines);
-}, 2000);
+});
 
 const getLinesFx = createEffect((rates?: Rates) => {
   const lines = getLinesFromStorage();
@@ -64,21 +66,19 @@ const getLinesFx = createEffect((rates?: Rates) => {
   return rates ? recalculateLines(lines, rates) : lines;
 });
 
-const $lines = createStore<Line[]>([]).on(getLinesFx.doneData, (_, lines) => lines);
-$lines.watch((lines) => {
-  updateLinesInStorage(lines);
-});
+const $lines = createStore<Line[] | undefined>(undefined, { skipVoid: false })
+  .on(getLinesFx.doneData, (_, lines) => lines);
 
 const $usedCurrencies = combine(
   $lines,
-  (lines) => new Set<CurrencyCode>(lines.map((line) => line.currency)),
+  (lines) => new Set<CurrencyCode>((lines ?? []).map((line) => line.currency)),
 );
 
 const lineAdded = createEvent<Rates>();
 sample({
   clock: lineAdded,
   source: [$usedCurrencies, $lines] as const,
-  fn: ([usedCurrencies, lines], rates) => {
+  fn: ([usedCurrencies, lines = []], rates) => {
     let currency = DEFAULT_CURRENCY_FIAT;
 
     if (lines.length === 0) return [{ currency, amount: 1 }];
@@ -101,7 +101,7 @@ sample({
 });
 
 const lineDeleted = createEvent<Line>();
-$lines.on(lineDeleted, (state, line) => state.filter((l) => l.currency !== line.currency));
+$lines.on(lineDeleted, (state = [], line) => state.filter((l) => l.currency !== line.currency));
 
 const currencyChanged = createEvent<{
   line: Line;
@@ -112,7 +112,7 @@ sample({
   clock: currencyChanged,
   source: [$lines, $usedCurrencies] as const,
   filter: ([, usedCurrencies], payload) => !usedCurrencies.has(payload.newCurrency),
-  fn: ([lines], payload) => lines.map((l) => {
+  fn: ([lines = []], payload) => lines.map((l) => {
     if (l.currency !== payload.line.currency) return l;
 
     return {
@@ -131,7 +131,7 @@ const amountChanged = createEvent<{
   newAmount: Line['amount'],
   rates: Rates,
 }>();
-$lines.on(amountChanged, (lines, payload) => lines.map((l) => {
+$lines.on(amountChanged, (lines = [], payload) => lines.map((l) => {
   if (l.currency === payload.line.currency) return {
     currency: payload.line.currency,
     amount: roundTo(payload.newAmount, CONVERT_PRECISION),
@@ -153,7 +153,7 @@ const ratesUpdated = createEvent<{
 sample({
   clock: ratesUpdated,
   source: $lines,
-  filter: (lines) => !lines.length,
+  filter: (lines) => !lines?.length,
   fn: (_, payload) => payload.rates,
   target: getLinesFx,
 });
@@ -161,12 +161,19 @@ sample({
 sample({
   clock: ratesUpdated,
   source: $lines,
-  filter: (lines, { rates }) => lines.length > 1 && rates !== undefined,
-  fn: (lines, { rates }) => {
+  filter: (lines, { rates }) => rates !== undefined && lines !== undefined && lines.length > 1,
+  fn: (lines = [], { rates }) => {
     if (typeof rates !== 'object') return lines;
     return recalculateLines(lines, rates);
   },
   target: $lines,
+});
+
+const linesChangedDebounced = debounce($lines, 1000);
+sample({
+  clock: linesChangedDebounced,
+  filter: (lines) => lines !== undefined,
+  target: saveLinesInStorageFx,
 });
 
 export {
