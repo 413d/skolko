@@ -6,7 +6,14 @@ type Props = {
   value: number;
   onChange: (newAmount: number) => void;
   className?: string;
-}
+};
+
+const DEBOUNCE_MS = 500;
+
+const parseAmount = (value: string): number => {
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 0 ? num : 0;
+};
 
 export const AmountInput = ({
   value,
@@ -20,12 +27,18 @@ export const AmountInput = ({
     setAmount(value);
   }, [value]);
 
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
   const onAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = parseFloat(e.target.value) || 0;
+    const newAmount = parseAmount(e.target.value);
     setAmount(newAmount);
 
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => onChange(newAmount), 500);
+    timeoutRef.current = setTimeout(() => onChange(newAmount), DEBOUNCE_MS);
   };
 
   const onClear = () => {
@@ -38,10 +51,11 @@ export const AmountInput = ({
     <div className={cn('relative', className)}>
       <Input
         type="number"
+        inputMode="decimal"
         step={0.0001}
         min={0}
         placeholder="0"
-        value={amount}
+        value={amount || ''}
         onChange={onAmountChange}
         aria-label="Amount"
         className="pr-10 w-full min-w-px"
@@ -49,6 +63,7 @@ export const AmountInput = ({
       {amount > 0 && (
         <button
           type="button"
+          aria-label="Clear amount"
           className="absolute inset-y-0 right-0 pr-3 focus:outline-none cursor-pointer"
           onClick={onClear}
         >
