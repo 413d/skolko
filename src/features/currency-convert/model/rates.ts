@@ -22,7 +22,7 @@ type RatesData = {
 };
 
 const CACHE_KEY = 'exchange-rates';
-const CACHE_DURATION = Number(valueOrDefault(import.meta.env.VITE_EXCHANGE_RATES_CACHE_TTL, '3600000'));
+const CACHE_DURATION = Number(valueOrDefault(import.meta.env.VITE_EXCHANGE_RATES_CACHE_TTL, '3600000')) || 3600000;
 const isValidCache = (data: unknown): data is RatesData => (
   typeof data === 'object' &&
   data !== null &&
@@ -32,6 +32,10 @@ const isValidCache = (data: unknown): data is RatesData => (
 const isFreshCache = (data: Pick<RatesData, 'timestamp'>): boolean => (
   Date.now() - data.timestamp < CACHE_DURATION
 );
+
+const saveRatesToCacheFx = createEffect((data: RatesData) => {
+  setStorageData(CACHE_KEY, data);
+});
 
 const getRatesFromCacheFx = createEffect(() => {
   const cached = getStorageData(CACHE_KEY);
@@ -48,16 +52,15 @@ const getRatesFromApiFx = createEffect(async () => {
     { maxAttempts: 5, delay: 300 },
   );
 
-  const data = {
+  return {
     rates,
     timestamp: Date.now(),
   } satisfies RatesData;
+});
 
-  setTimeout(() => {
-    setStorageData(CACHE_KEY, data);
-  }, 1);
-
-  return data;
+sample({
+  clock: getRatesFromApiFx.doneData,
+  target: saveRatesToCacheFx,
 });
 
 sample({
@@ -90,13 +93,9 @@ const $ratesError = createStore('')
   })
   .reset(getRatesFromApiFx);
 
-const $ratesFetchedAt = createStore<Date | undefined>(undefined, { skipVoid: false });
-sample({
-  clock: [getRatesFromCacheFx.doneData, getRatesFromApiFx.doneData],
-  source: $ratesFetchedAt,
-  fn: (currentDate, data) => data?.timestamp ? new Date(data.timestamp) : currentDate,
-  target: $ratesFetchedAt,
-});
+const $ratesFetchedAt = createStore<Date | undefined>(undefined, { skipVoid: false })
+  .on(getRatesFromCacheFx.doneData, (_, data) => data?.timestamp ? new Date(data.timestamp) : undefined)
+  .on(getRatesFromApiFx.doneData, (_, data) => new Date(data.timestamp));
 
 const ratesInited = createEvent();
 sample({

@@ -15,7 +15,6 @@ type Line = {
 type Rates = Record<CurrencyCode, number>;
 
 const CONVERT_PRECISION = 4;
-const DEFAULT_LINE: Readonly<Line> = { currency: DEFAULT_CURRENCY_FIAT, amount: 0 };
 
 const isValidLine = (data: unknown): data is Line => (
   typeof data === 'object' &&
@@ -62,7 +61,7 @@ const saveLinesInStorageFx = createEffect((lines?: Line[]) => {
 
 const getLinesFx = createEffect((rates?: Rates) => {
   const lines = getLinesFromStorage();
-  if (lines.length === 0) return [{ ...DEFAULT_LINE }];
+  if (lines.length === 0) return [{ currency: DEFAULT_CURRENCY_FIAT, amount: 0 }];
   return rates ? recalculateLines(lines, rates) : lines;
 });
 
@@ -79,15 +78,16 @@ sample({
   clock: lineAdded,
   source: [$usedCurrencies, $lines] as const,
   fn: ([usedCurrencies, lines = []], rates) => {
-    let currency = DEFAULT_CURRENCY_FIAT;
+    if (lines.length === 0) return [{ currency: DEFAULT_CURRENCY_FIAT, amount: 1 }];
 
-    if (lines.length === 0) return [{ currency, amount: 1 }];
+    const availableCurrencies = Object.keys(rates).filter(
+      (c) => !usedCurrencies.has(c),
+    );
+    if (availableCurrencies.length === 0) return lines;
 
-    while (usedCurrencies.has(currency) || !rates[currency]) {
-      const allCurrencies = Object.keys(rates);
-      const randomIndex = getRandomInt(0, allCurrencies.length - 1);
-      currency = allCurrencies[randomIndex];
-    }
+    const currency = availableCurrencies.includes(DEFAULT_CURRENCY_FIAT)
+      ? DEFAULT_CURRENCY_FIAT
+      : availableCurrencies[getRandomInt(0, availableCurrencies.length - 1)];
 
     const [toConvert] = lines;
     const amount = roundTo(
