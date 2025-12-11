@@ -8,8 +8,14 @@
     <link rel="icon" href="/skolko.svg" sizes="any" type="image/svg+xml" />
     <link rel="mask-icon" href="/pwa-maskable-512x512.png" color="#FFFFFF" />
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)" />
     <title>%VITE_APP_TITLE%</title>
+    <style>
+      body { background: #ffffff; color: #0c0a09; }
+      @media (prefers-color-scheme: dark) { body { background: #0c0a09; color: #fafaf9; } }
+      html.dark body { background: #0c0a09; color: #fafaf9; }
+      html.light body { background: #ffffff; color: #0c0a09; }
+    </style>
     <meta
       name="description"
       content="Instant currency converter with real-time exchange rates for crypto and fiat currencies. Fast, accurate, easy to use, works offline, and installable as a PWA." />
