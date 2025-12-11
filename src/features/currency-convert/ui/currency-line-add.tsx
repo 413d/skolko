@@ -19,7 +19,7 @@ export const CurrencyLineAdd = ({
   className,
 }: Props) => {
   const [usedCount, onNewLine] = useUnit([
-    $lines.map((lines) => lines.length),
+    $lines.map((lines) => lines?.length ?? 0),
     lineAdded,
   ] as const);
 
