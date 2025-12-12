@@ -79,10 +79,15 @@ export const CurrencyLine = memo<Props>(({
 CurrencyLine.displayName = 'CurrencyLine';
 
 export const CurrencyLineSkeleton = ({ className, canCopy }: { className?: string; canCopy?: boolean }) => (
-  <div className={cn('flex space-x-2 select-none cursor-wait', className)}>
+  <div
+    className={cn('flex space-x-2 select-none cursor-wait', className)}
+    role="status"
+    aria-busy="true"
+    aria-label="Loading currency line"
+  >
     <AmountInputSkeleton />
-    <div className="h-9 w-20 bg-primary/10 rounded-md animate-pulse" />
-    {canCopy && (<div className="h-9 w-9 bg-primary/10 rounded-md animate-pulse" />)}
-    <div className="h-9 w-9 bg-primary/10 rounded-md animate-pulse" />
+    <div className="h-9 w-20 bg-primary/10 rounded-md animate-pulse" aria-hidden="true" />
+    {canCopy && (<div className="h-9 w-9 bg-primary/10 rounded-md animate-pulse" aria-hidden="true" />)}
+    <div className="h-9 w-9 bg-primary/10 rounded-md animate-pulse" aria-hidden="true" />
   </div>
 );

@@ -52,7 +52,7 @@ export const AmountInput = ({
         <button
           type="button"
           aria-label="Clear amount"
-          className="absolute inset-y-0 right-0 pr-3 focus:outline-none cursor-pointer"
+          className="absolute inset-y-0 right-0 pr-3 cursor-pointer rounded-r-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           onClick={handleClear}
         >
           <CircleX className="w-5 opacity-50 hover:opacity-100" />
@@ -62,4 +62,9 @@ export const AmountInput = ({
   );
 };
 
-export const AmountInputSkeleton = () => (<div className="h-9 grow bg-primary/10 rounded-md animate-pulse" />);
+export const AmountInputSkeleton = () => (
+  <div
+    className="h-9 grow bg-primary/10 rounded-md animate-pulse"
+    aria-hidden="true"
+  />
+);

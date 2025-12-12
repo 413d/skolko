@@ -1,11 +1,9 @@
 import { useUnit } from 'effector-react';
-import { Loader2 } from 'lucide-react';
+import { CopyPlus, Loader2 } from 'lucide-react';
 
 import { Button, cn } from '@/shared/ui';
 
 import { $lines, lineAdded } from '../model/converter';
-
-const title = 'Add currency';
 
 type Props = {
   rates: Record<string, number>;
@@ -33,14 +31,11 @@ export const CurrencyLineAdd = ({
       variant="default"
       size="lg"
       disabled={isRatesLoading}
-      aria-label={title}
+      aria-label="Add currency"
       onClick={() => onNewLine(rates)}
     >
       {
-        isRatesLoading ? (<>
-          <Loader2 className="animate-spin" />
-          <span>The currencies are loading</span>
-        </>) : title
+        isRatesLoading ? <Loader2 className="animate-spin" /> : <CopyPlus />
       }
     </Button>
   );
