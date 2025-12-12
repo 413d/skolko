@@ -37,7 +37,7 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
   return (
     <div className={className}>
       <RatesError hasData={rates !== undefined} errorMessage={ratesError} />
-      <RatesFetchDate date={ratesFetchedAt} />
+      <RatesFetchDate date={ratesFetchedAt} isLoading={isRatesLoading} />
       <CurrencyLines rates={rates} isRatesLoading={isRatesLoading} />
       {rates !== undefined && (
         <CurrencyLineAdd
