@@ -1,7 +1,7 @@
 import { createStore, createEffect, createEvent, sample } from 'effector';
 
 import { getStorageData, setStorageData } from '@/shared/lib/storage';
-import { withRetryAndTimeout } from '@/shared/lib/retry';
+import { withRetry } from '@/shared/lib/retry';
 import { valueOrDefault } from '@/shared/lib/validation';
 
 import type { CurrencyCode } from '@/entities/currency';
@@ -47,9 +47,9 @@ const getRatesFromCacheFx = createEffect(() => {
 });
 
 const getRatesFromApiFx = createEffect(async () => {
-  const rates = await withRetryAndTimeout(
+  const rates = await withRetry(
     () => getExchangeRates(),
-    { maxAttempts: 5, delay: 300 },
+    { maxAttempts: 3, retryDelay: 500, requestTimeout: 10000 },
   );
 
   return {
@@ -91,7 +91,16 @@ const $ratesError = createStore('')
 
     return 'Something went wrong while fetching exchange rates.';
   })
-  .reset(getRatesFromApiFx);
+  .reset(getRatesFromApiFx.doneData);
+
+// Don't show error if we have cached data (offline-first)
+sample({
+  clock: getRatesFromApiFx.failData,
+  source: $rates,
+  filter: (rates) => rates !== undefined,
+  fn: () => '',
+  target: $ratesError,
+});
 
 const $ratesFetchedAt = createStore<Date | undefined>(undefined, { skipVoid: false })
   .on(getRatesFromCacheFx.doneData, (_, data) => data?.timestamp ? new Date(data.timestamp) : undefined)
