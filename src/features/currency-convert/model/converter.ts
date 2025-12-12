@@ -131,7 +131,10 @@ const amountChanged = createEvent<{
   newAmount: Line['amount'],
   rates: Rates,
 }>();
-$lines.on(amountChanged, (lines = [], payload) => lines.map((l) => {
+
+const amountChangedDebounced = debounce(amountChanged, 500);
+
+$lines.on(amountChangedDebounced, (lines = [], payload) => lines.map((l) => {
   if (l.currency === payload.line.currency) return {
     currency: payload.line.currency,
     amount: roundTo(payload.newAmount, CONVERT_PRECISION),
