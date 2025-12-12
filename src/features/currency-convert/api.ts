@@ -1,5 +1,4 @@
 import { valueOrThrow } from '@/shared/lib/validation';
-import type { ExchangeRates } from './model/exchange-rates';
 
 const API_URL = valueOrThrow(import.meta.env.VITE_EXCHANGE_RATES_API_URL, 'VITE_EXCHANGE_RATES_API_URL');
 
@@ -19,7 +18,7 @@ const parseRates = (res: unknown) => {
   const { rates } = data;
   if (typeof rates !== 'object' || rates === null) throw new Error(ERROR_RATES);
 
-  return Object.entries(rates).reduce<ExchangeRates>((acc, [code, rate]) => {
+  return Object.entries(rates).reduce<Record<string, number>>((acc, [code, rate]) => {
     if (typeof rate === 'string') {
       rate = Number.parseFloat(rate);
     }
@@ -33,19 +32,14 @@ const parseRates = (res: unknown) => {
   }, {});
 };
 
-let inMemoryRates: ExchangeRates | undefined;
-export const getExchangeRates = async ({ signal }: {
-  signal?: AbortSignal;
-} = {}): Promise<ExchangeRates> => {
-  if (inMemoryRates !== undefined) return inMemoryRates;
-
-  const response = await fetch(API_URL, { signal });
+export const getExchangeRates = async (requestOptions?: RequestInit) => {
+  const response = await fetch(API_URL, requestOptions);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch exchange rates: ${response.statusText}`);
   }
 
   const rates = parseRates(await response.json());
-  inMemoryRates = rates;
+
   return rates;
 };

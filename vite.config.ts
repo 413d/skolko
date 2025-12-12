@@ -52,9 +52,28 @@ export default defineConfig({
           },
         ],
       },
-      // workbox: {
-      //   globPatterns: ['**/*.{js,css,html,ico,png,svg}']
-      // },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        runtimeCaching: [
+          {
+            // Cache exchange rates API requests with Network First strategy
+            // Falls back to cache when offline
+            urlPattern: /\/exchange-rates/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'rates-api-cache',
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
+      },
       devOptions: {
         enabled: process.env.SW_DEV === 'true',
       },

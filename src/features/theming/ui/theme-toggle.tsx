@@ -15,6 +15,8 @@ export const ThemeToggle = () => {
       size="icon"
       onClick={() => setTheme(isDarkTheme ? 'light' : 'dark')}
       onDoubleClick={() => setTheme('system')}
+      aria-label={isDarkTheme ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={isDarkTheme ? 'Switch to light theme (double-click for system)' : 'Switch to dark theme (double-click for system)'}
     >
       {isDarkTheme ? <Sun /> : <Moon />}
     </Button>

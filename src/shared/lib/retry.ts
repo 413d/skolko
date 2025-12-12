@@ -1,39 +1,50 @@
 type RetryConfig = {
+  /** Maximum number of retry attempts (default: 2) */
   maxAttempts?: number;
-  delay?: number;
-  abortController?: AbortController;
+  /** Delay between retries in ms, multiplied by attempt number (default: 500) */
+  retryDelay?: number;
+  /** Timeout for each individual request in ms (default: 10000) */
+  requestTimeout?: number;
 };
 
-export const withRetryAndTimeout = async <T>(
+const withTimeout = <T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => {
+        reject(new DOMException('Request timeout', 'TimeoutError'));
+      }, timeoutMs);
+    }),
+  ]);
+};
+
+export const withRetry = async <T>(
   fn: () => Promise<T>,
-  { maxAttempts = 2, delay = 500, abortController }: RetryConfig = {},
+  {
+    maxAttempts = 2,
+    retryDelay = 500,
+    requestTimeout = 10000,
+  }: RetryConfig = {},
 ): Promise<T> => {
   let lastError: unknown;
 
-  let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
-  const timeoutPromise = new Promise<T>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      abortController?.abort();
-      reject(new DOMException('Timeout', 'TimeoutError'));
-    }, delay * maxAttempts * 2);
-  });
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      if (abortController?.signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
-      }
-
-      const result = await Promise.race([fn(), timeoutPromise] as const);
-      clearTimeout(timeoutId);
-      return result;
+      return await withTimeout(fn(), requestTimeout);
     } catch (error) {
       lastError = error;
-      if (error instanceof DOMException || attempt === maxAttempts) {
-        clearTimeout(timeoutId);
+
+      // Don't retry on timeout or if it's the last attempt
+      const isTimeout = error instanceof DOMException && error.name === 'TimeoutError';
+      if (isTimeout || attempt === maxAttempts) {
         break;
       }
-      await new Promise(resolve => setTimeout(resolve, delay * attempt));
+
+      // Exponential backoff: retryDelay * attempt
+      await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
     }
   }
 
