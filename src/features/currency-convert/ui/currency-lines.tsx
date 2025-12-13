@@ -1,11 +1,28 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useUnit } from 'effector-react';
 import { toast } from 'sonner';
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 import { useCopy } from '../lib/copy';
 
 import {
   lineDeleted,
+  lineReordered,
   currencyChanged,
   amountChanged,
   ratesUpdated,
@@ -13,7 +30,7 @@ import {
   $usedCurrencies,
 } from '../model/converter';
 
-import { CurrencyLine, CurrencyLineSkeleton } from './currency-line';
+import { CurrencyLine, CurrencyLineDragOverlay, CurrencyLineSkeleton } from './currency-line';
 
 type Props = {
   rates: Record<string, number> | undefined;
@@ -23,6 +40,7 @@ type Props = {
 export const CurrencyLines = ({ rates, isRatesLoading }: Props) => {
   const [
     onDeleteLine,
+    onLineReordered,
     onCurrencyChange,
     onAmountChange,
     onRatesUpdate,
@@ -30,6 +48,7 @@ export const CurrencyLines = ({ rates, isRatesLoading }: Props) => {
     usedCurrencies,
   ] = useUnit([
     lineDeleted,
+    lineReordered,
     currencyChanged,
     amountChanged,
     ratesUpdated,
@@ -45,6 +64,32 @@ export const CurrencyLines = ({ rates, isRatesLoading }: Props) => {
 
   const { canCopy, copy } = useCopy();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const [currencyToDrag, setCurrencyToDrag] = useState<string>();
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setCurrencyToDrag(event.active.id as string);
+  };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    setCurrencyToDrag(undefined);
+
+    if (over && active.id !== over.id) {
+      const oldIndex = lines?.findIndex((l) => l.currency === active.id);
+      const newIndex = lines?.findIndex((l) => l.currency === over.id);
+
+      if (oldIndex !== undefined && newIndex !== undefined && oldIndex !== -1 && newIndex !== -1) {
+        onLineReordered({ from: oldIndex, to: newIndex });
+      }
+    }
+  };
+
   if ((isRatesLoading && rates === undefined) || lines === undefined) {
     return <CurrencyLinesSkeleton
       lineCount={Math.max(2, lines?.length ?? 0)}
@@ -52,33 +97,55 @@ export const CurrencyLines = ({ rates, isRatesLoading }: Props) => {
     />;
   }
 
-  return lines.map((v) => rates?.[v.currency] !== undefined && (
-    <CurrencyLine
-      className="mb-4"
-      key={v.currency}
-      currencies={currencies}
-      amount={v.amount}
-      currency={v.currency}
-      onAmountChange={(newAmount) => onAmountChange({
-        line: v,
-        newAmount,
-        rates,
-      })}
-      onCurrencyChange={(newCurrency) => {
-        if (usedCurrencies.has(newCurrency)) {
-          toast.error(`Currency ${newCurrency} is already used.`);
-          return;
-        }
-        onCurrencyChange({
-          line: v,
-          newCurrency,
-          rates,
-        });
-      }}
-      onDelete={() => !isRatesLoading && onDeleteLine(v)}
-      onCopy={canCopy ? (() => copy(`${String(v.amount)} ${v.currency}`)) : undefined}
-    />
-  ));
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={lines.map(l => l.currency)}
+        strategy={verticalListSortingStrategy}
+      >
+        {lines.map((v) => rates?.[v.currency] !== undefined && (
+          <CurrencyLine
+            className="mb-4"
+            key={v.currency}
+            currencies={currencies}
+            amount={v.amount}
+            currency={v.currency}
+            onAmountChange={(newAmount) => onAmountChange({
+              line: v,
+              newAmount,
+              rates,
+            })}
+            onCurrencyChange={(newCurrency) => {
+              if (usedCurrencies.has(newCurrency)) {
+                toast.error(`Currency ${newCurrency} is already used.`);
+                return;
+              }
+              onCurrencyChange({
+                line: v,
+                newCurrency,
+                rates,
+              });
+            }}
+            onDelete={() => !isRatesLoading && onDeleteLine(v)}
+            onCopy={canCopy ? (() => copy(`${String(v.amount)} ${v.currency}`)) : undefined}
+          />
+        ))}
+      </SortableContext>
+      <DragOverlay>
+        {currencyToDrag && (
+          <CurrencyLineDragOverlay
+            currency={currencyToDrag}
+            canCopy={canCopy}
+          />
+        )}
+      </DragOverlay>
+    </DndContext>
+  );
 };
 
 type SkeletonProps = {
