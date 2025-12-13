@@ -103,6 +103,14 @@ sample({
 const lineDeleted = createEvent<Line>();
 $lines.on(lineDeleted, (state = [], line) => state.filter((l) => l.currency !== line.currency));
 
+const lineReordered = createEvent<{ from: number; to: number }>();
+$lines.on(lineReordered, (lines = [], { from, to }) => {
+  const newLines = [...lines];
+  const [movedLine] = newLines.splice(from, 1);
+  newLines.splice(to, 0, movedLine);
+  return newLines;
+});
+
 const currencyChanged = createEvent<{
   line: Line;
   newCurrency: Line['currency'],
@@ -182,6 +190,7 @@ sample({
 export {
   lineAdded,
   lineDeleted,
+  lineReordered,
   currencyChanged,
   amountChanged,
   ratesUpdated,
