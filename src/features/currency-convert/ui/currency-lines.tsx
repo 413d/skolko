@@ -25,7 +25,7 @@ import {
   lineReordered,
   currencyChanged,
   amountChanged,
-  ratesUpdated,
+  converterUpdated,
   $lines,
   $usedCurrencies,
 } from '../model/converter';
@@ -35,15 +35,16 @@ import { CurrencyLine, CurrencyLineDragOverlay, CurrencyLineSkeleton } from './c
 type Props = {
   rates: Record<string, number> | undefined;
   isRatesLoading: boolean;
+  converterId?: string;
 }
 
-export const CurrencyLines = ({ rates, isRatesLoading }: Props) => {
+export const CurrencyLines = ({ rates, isRatesLoading, converterId }: Props) => {
   const [
     onDeleteLine,
     onLineReordered,
     onCurrencyChange,
     onAmountChange,
-    onRatesUpdate,
+    updateConverter,
     lines,
     usedCurrencies,
   ] = useUnit([
@@ -51,14 +52,14 @@ export const CurrencyLines = ({ rates, isRatesLoading }: Props) => {
     lineReordered,
     currencyChanged,
     amountChanged,
-    ratesUpdated,
+    converterUpdated,
     $lines,
     $usedCurrencies,
   ] as const);
 
   useEffect(() => {
-    onRatesUpdate({ rates });
-  }, [onRatesUpdate, rates]);
+    updateConverter({ rates, converterId });
+  }, [updateConverter, rates, converterId]);
 
   const currencies = useMemo(() => rates ? Object.keys(rates) : [], [rates]);
 
