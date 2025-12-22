@@ -1,5 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import { debounce } from 'patronum';
+import { debounce, previous } from 'patronum';
 
 import { getStorageData, setStorageData } from '@/shared/lib/storage';
 
@@ -53,10 +53,7 @@ const $presets = createStore<Preset[]>(getPresetsFromStorage())
   .on(presetDeleted, (presets, id) => presets.filter((p) => p.id !== id));
 
 const $activePresetId = createStore<PresetId | undefined>(getActivePresetIdFromStorage(), { skipVoid: false })
-  .on(presetSelected, (_, id) => id)
-  .on(presetDeleted, (activeId, deletedId) =>
-    (activeId === deletedId ? undefined : activeId),
-  );
+  .on(presetSelected, (_, id) => id);
 
 const presetsChangedDebounced = debounce($presets, 500);
 sample({
@@ -68,6 +65,30 @@ const activePresetIdChangedDebounced = debounce($activePresetId, 500);
 sample({
   clock: activePresetIdChangedDebounced,
   target: saveActivePresetIdInStorageFx,
+});
+
+const $previousPresets = previous($presets);
+sample({
+  clock: $presets.updates,
+  source: {
+    previousPresets: $previousPresets,
+    nextPresets: $presets,
+    currentPresetId: $activePresetId,
+  },
+  filter: ({ previousPresets }) => Boolean(previousPresets),
+  fn: ({ nextPresets, previousPresets, currentPresetId }) => {
+    if (!previousPresets) return currentPresetId;
+    if (nextPresets.length === 0) return undefined;
+
+    // select on created preset
+    if (nextPresets.length > previousPresets.length) {
+      return nextPresets[nextPresets.length - 1].id;
+    }
+
+    // validate current preset id on deleted preset
+    return nextPresets.find(preset => preset.id === currentPresetId)?.id;
+  },
+  target: $activePresetId,
 });
 
 export {
