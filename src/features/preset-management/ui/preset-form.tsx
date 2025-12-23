@@ -1,24 +1,23 @@
 import { useState, type FC } from 'react';
-import { useUnit } from 'effector-react';
 import { toast } from 'sonner';
 import { CircleX, Save } from 'lucide-react';
 
 import { Input, Button, cn } from '@/shared/ui';
 
-import { $presets, presetCreated } from '../model/presets';
+import { $presets } from '../model/presets';
 import { clearName } from '../lib/name';
+import { useUnit } from 'effector-react';
 
 export const PresetForm: FC<{
-  initialName?: string,
+  id?: string,
   className?: string,
   onClose?: () => void,
-}> = ({ initialName, className, onClose }) => {
-  const [presets, onCreate] = useUnit([
-    $presets,
-    presetCreated,
-  ] as const);
+  onSubmit: (name: string) => void,
+}> = ({ id, className, onClose, onSubmit }) => {
+  const presets = useUnit($presets);
 
-  const [name, setName] = useState(initialName ?? '');
+  const presetName = id && presets.find(p => p.id === id)?.name;
+  const [name, setName] = useState(presetName ?? '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +34,7 @@ export const PresetForm: FC<{
       return;
     }
 
-    onCreate({ name: validName });
+    onSubmit(validName);
   };
 
   return (
