@@ -12,10 +12,11 @@ import { PresetForm } from './preset-form';
 type Props = {
   activePresetId: string | undefined;
   onSelectPreset: (id: string) => void;
+  onDeletePreset?: (id: string) => void;
   className?: string;
 };
 
-export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, className }) => {
+export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, onDeletePreset, className }) => {
   const [createPreset, renamePreset] = useUnit([
     presetCreated,
     presetRenamed,
@@ -78,7 +79,10 @@ export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, class
           variant="outline"
           aria-label="Delete the preset"
           className="cursor-pointer"
-          onClick={() => presetDeleted(activePresetId)}
+          onClick={() => {
+            presetDeleted(activePresetId);
+            onDeletePreset?.(activePresetId);
+          }}
         >
           <Trash2 />
         </Button>
