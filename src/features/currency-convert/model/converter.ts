@@ -169,17 +169,20 @@ const converterUpdated = createEvent<{
   converterId?: string;
 }>();
 
-sample({
-  clock: converterUpdated,
-  fn: ({ converterId }) => converterId,
-  target: $converterId,
-});
-
 const isLinesReady = (
   currentLines: Line[] | undefined,
   newConverterId: string | undefined,
   previousConverterId: string | undefined,
 ) => currentLines !== undefined && newConverterId === previousConverterId;
+
+// prevent editing/saving stale lines into a new converter while loading from storage
+sample({
+  clock: converterUpdated,
+  source: $converterId,
+  filter: (previousConverterId, payload) => payload.converterId !== previousConverterId,
+  fn: () => undefined,
+  target: $lines,
+});
 
 // init or switch converter
 sample({
@@ -199,6 +202,13 @@ sample({
     return recalculateLines(lines, payload.rates);
   },
   target: $lines,
+});
+
+// update current converter id (must run AFTER init/switch decision)
+sample({
+  clock: converterUpdated,
+  fn: ({ converterId }) => converterId,
+  target: $converterId,
 });
 
 const linesChangedDebounced = debounce($lines, 1000);
