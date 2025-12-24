@@ -62,11 +62,21 @@ const saveLinesInStorageFx = createEffect(({ lines, converterId }: {lines?: Line
   setStorageData(getLinesStorageKey(converterId), lines);
 });
 
-const getLinesFx = createEffect(({ rates, converterId }: { rates?: Rates; converterId?: string }) => {
-  const lines = getLinesFromStorage(converterId);
-  if (lines.length === 0) return [{ currency: DEFAULT_CURRENCY_FIAT, amount: 0 }];
-  return rates ? recalculateLines(lines, rates) : lines;
-});
+const getLinesFx = createEffect(
+  ({
+    rates,
+    converterId,
+    defaultLines = [{ currency: DEFAULT_CURRENCY_FIAT, amount: 0 }],
+  }: {
+    rates?: Rates;
+    converterId?: string;
+    defaultLines?: Line[];
+  } = {}) => {
+    const lines = getLinesFromStorage(converterId);
+    if (lines.length === 0) return defaultLines;
+    return rates ? recalculateLines(lines, rates) : lines;
+  },
+);
 
 const $lines = createStore<Line[] | undefined>(undefined, { skipVoid: false })
   .on(getLinesFx.doneData, (_, lines) => lines);
@@ -175,21 +185,15 @@ const isLinesReady = (
   previousConverterId: string | undefined,
 ) => currentLines !== undefined && newConverterId === previousConverterId;
 
-// prevent editing/saving stale lines into a new converter while loading from storage
-sample({
-  clock: converterUpdated,
-  source: $converterId,
-  filter: (previousConverterId, payload) => payload.converterId !== previousConverterId,
-  fn: () => undefined,
-  target: $lines,
-});
-
 // init or switch converter
 sample({
   clock: converterUpdated,
   source: [$lines, $converterId] as const,
   filter: ([lines, converterId], payload) => !isLinesReady(lines, payload.converterId, converterId),
-  fn: (_, payload) => payload,
+  fn: ([prevLines, prevConverterId], payload) => {
+    if (prevConverterId !== undefined || !prevLines?.length) return payload;
+    return { ...payload, defaultLines: [...prevLines] };
+  },
   target: getLinesFx,
 });
 // recalculate current converter lines
