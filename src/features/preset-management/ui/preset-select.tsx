@@ -1,5 +1,5 @@
 import { type FC } from 'react';
-import { useList } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import {
   Select,
@@ -14,23 +14,27 @@ import {
 import { $presets } from '../model/presets';
 
 export const PresetSelect: FC<{
-  activePresetId: string | undefined;
+  activePresetId: string;
   onSelectPreset: (id: string) => void;
   className?: string;
 }> = ({ activePresetId, onSelectPreset, className }) => {
-  const list = useList($presets, (preset) => (
-    <SelectItem value={preset.id}>{preset.name}</SelectItem>
-  ));
+  const presets = useUnit($presets);
 
   return (
     <Select value={activePresetId} onValueChange={onSelectPreset}>
       <SelectTrigger className={className}>
         <SelectValue placeholder="Select a preset" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent align="end" position="popper">
         <SelectGroup>
           <SelectLabel>Presets</SelectLabel>
-          {list}
+          {presets.length > 0 ? presets.map((preset) => (
+            <SelectItem key={preset.id} value={preset.id}>{preset.name}</SelectItem>
+          )) : (
+            <SelectItem value="0" disabled>
+              No presets yet
+            </SelectItem>
+          )}
         </SelectGroup>
       </SelectContent>
     </Select>

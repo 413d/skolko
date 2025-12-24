@@ -58,7 +58,7 @@ export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, class
 
       <PresetSelect
         className="flex-1"
-        activePresetId={activePresetId}
+        activePresetId={activePresetId ?? ''}
         onSelectPreset={onSelectPreset}
       />
 
