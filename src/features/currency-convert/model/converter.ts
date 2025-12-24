@@ -174,6 +174,20 @@ $lines.on(amountChangedDebounced, (lines = [], payload) => lines.map((l) => {
 const $converterId = createStore<string | undefined>(undefined, { skipVoid: false })
   .reset(getLinesFx.failData);
 
+const converterDeleted = createEvent<{ converterId: string }>();
+sample({
+  clock: converterDeleted,
+  fn: ({ converterId }) => ({ lines: undefined, converterId }),
+  target: saveLinesInStorageFx,
+});
+sample({
+  clock: converterDeleted,
+  source: $converterId,
+  filter: (currentConverterId, { converterId }) => currentConverterId === converterId,
+  fn: () => undefined,
+  target: $converterId,
+});
+
 const converterUpdated = createEvent<{
   rates?: Rates;
   converterId?: string;
@@ -231,6 +245,7 @@ export {
   currencyChanged,
   amountChanged,
   converterUpdated,
+  converterDeleted,
   $lines,
   $usedCurrencies,
 };
