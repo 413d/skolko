@@ -31,12 +31,13 @@ export const CurrencyLineAdd = ({
       variant="default"
       size="lg"
       disabled={isRatesLoading}
-      aria-label="Add currency"
+      aria-label="Add another currency"
       onClick={() => onNewLine(rates)}
     >
       {
         isRatesLoading ? <Loader2 className="animate-spin" /> : <CopyPlus />
       }
+      Add currency
     </Button>
   );
 };

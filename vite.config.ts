@@ -18,7 +18,7 @@ export default defineConfig({
       manifest: {
         name: `${APP_NAME}: Currency Converter`,
         short_name: APP_NAME,
-        description: 'Instant currency converter with real-time exchange rates for crypto and fiat currencies. Fast, accurate, easy to use, works offline, and installable as a PWA.',
+        description: 'Real-time crypto and fiat currency converter. Fast, offline-capable, and PWA-ready.',
         theme_color: '#ffffff',
         icons: [
           {

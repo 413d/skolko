@@ -7,17 +7,17 @@ export const useCopy = () => {
 
   const copy = (textToCopy: string) => {
     if (!canCopy) {
-      toast.error('📋 Clipboard not supported');
+      toast.error('Clipboard not available.');
       return;
     }
 
     copyToClipboard(textToCopy)
       .then(() => {
-        toast.info(`📋 Copied: ${textToCopy}`);
+        toast.info(`Copied: ${textToCopy}`);
       })
       .catch((error: unknown) => {
         console.error('Failed to copy:', error);
-        toast.error('📋 Failed to copy');
+        toast.error('Could not copy.');
       });
   };
 

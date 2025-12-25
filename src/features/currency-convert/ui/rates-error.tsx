@@ -14,7 +14,7 @@ export const RatesError = (props: {
   return (
     <Alert variant={props.hasData ? 'default' : 'destructive'} className="mb-4">
       <AlertCircle className="h-4 w-4" />
-      <AlertTitle>{props.hasData ? 'Used old exchange rates' : 'Error'}</AlertTitle>
+      <AlertTitle>{props.hasData ? 'Rates may be outdated' : 'Unable to load rates'}</AlertTitle>
       <AlertDescription>
         {props.errorMessage}
       </AlertDescription>

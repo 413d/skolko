@@ -78,18 +78,18 @@ const $isRatesLoading = getRatesFromApiFx.pending;
 const $ratesError = createStore('')
   .on(getRatesFromApiFx.failData, (_, e) => {
     if (e instanceof TypeError && e.message.includes('network')) {
-      return 'Network connection issue. Please check your internet connection.';
+      return 'Network error. Check your connection.';
     }
 
-    if (e instanceof Error && e.message.includes('status')) {
-      return 'The exchange rate server is currently unavailable.';
+    if (e instanceof Error && (e.message.includes('status') || e.message.includes('Exchange rates request failed'))) {
+      return 'Rates service is unavailable.';
     }
     
     if (e instanceof SyntaxError) {
-      return 'Failed to process exchange rates data.';
+      return 'Invalid rates data received.';
     }
 
-    return 'Something went wrong while fetching exchange rates.';
+    return 'Could not load rates.';
   })
   .reset(getRatesFromApiFx.doneData);
 

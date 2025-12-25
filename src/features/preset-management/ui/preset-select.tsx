@@ -23,7 +23,7 @@ export const PresetSelect: FC<{
   return (
     <Select value={activePresetId} onValueChange={onSelectPreset}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder="Select a preset" />
+        <SelectValue placeholder="Select preset" />
       </SelectTrigger>
       <SelectContent align="end" position="popper">
         <SelectGroup>

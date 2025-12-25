@@ -25,12 +25,12 @@ export const PresetForm: FC<{
     const validName = clearName(name);
 
     if (!validName) {
-      toast.error('Preset name cannot be empty or contain only special characters.');
+      toast.error('Enter a preset name.');
       return;
     }
 
     if (presets.some(preset => preset.name === validName)) {
-      toast.error('A preset with this name already exists.');
+      toast.error('Name already in use.');
       return;
     }
 
@@ -48,7 +48,7 @@ export const PresetForm: FC<{
           type="button"
           size="icon"
           variant="outline"
-          aria-label="Close preset form"
+          aria-label="Cancel"
           onClick={onClose}
           className="cursor-pointer"
         >

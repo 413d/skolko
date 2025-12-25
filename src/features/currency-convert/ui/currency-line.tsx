@@ -41,7 +41,8 @@ const CurrencyLineContent = memo<Omit<Props, 'className'> & {
       variant="ghost"
       size="icon"
       className="cursor-grab touch-none shrink-0"
-      aria-label="Drag to reorder"
+      aria-label="Reorder row"
+      title="Reorder"
       {...dragAttributes}
       {...dragListeners}
     >
@@ -58,7 +59,7 @@ const CurrencyLineContent = memo<Omit<Props, 'className'> & {
       currencies={currencies}
       currency={currency}
       onSelectCurrency={onCurrencyChange}
-      aria-label="Currency"
+      aria-label="Select currency"
     />
 
     {onCopy !== undefined && (
@@ -66,8 +67,8 @@ const CurrencyLineContent = memo<Omit<Props, 'className'> & {
         className="cursor-pointer"
         variant="outline"
         size="icon"
-        title="Copy amount and currency"
-        aria-label="Copy amount and currency"
+        title="Copy"
+        aria-label="Copy"
         onClick={onCopy}
       >
         <Copy />
@@ -78,8 +79,8 @@ const CurrencyLineContent = memo<Omit<Props, 'className'> & {
       className="cursor-pointer"
       variant="destructive"
       size="icon"
-      title="Delete"
-      aria-label={`Delete currency ${currency}`}
+      title="Remove"
+      aria-label="Remove row"
       onClick={onDelete}
     >
       <Trash2 />
@@ -134,7 +135,7 @@ export const CurrencyLineSkeleton = ({ className, canCopy }: { className?: strin
     className={cn('flex space-x-2 select-none cursor-wait', className)}
     role="status"
     aria-busy="true"
-    aria-label="Loading currency line"
+    aria-label="Loading row"
   >
     <div className="h-9 w-9 bg-primary/10 rounded-md animate-pulse shrink-0" aria-hidden="true" />
     <AmountInputSkeleton />

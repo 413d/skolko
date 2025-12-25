@@ -35,11 +35,11 @@ export class ErrorBoundary extends Component<Props, State> {
       return this.props.fallback ?? (
         <Alert variant="destructive" className="space-y-2">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{this.props.title ?? 'Something went wrong 💥'}</AlertTitle>
+          <AlertTitle>{this.props.title ?? 'Something went wrong'}</AlertTitle>
           <AlertDescription>
             {this.props.description ?? (
               <details>
-                <summary>Error details</summary>
+                <summary>Show error details</summary>
                 <pre>{this.state.error?.toString()}</pre>
               </details>
             )}

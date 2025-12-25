@@ -2,8 +2,8 @@ import { valueOrThrow } from '@/shared/lib/validation';
 
 const API_URL = valueOrThrow(import.meta.env.VITE_EXCHANGE_RATES_API_URL, 'VITE_EXCHANGE_RATES_API_URL');
 
-const ERROR_RESPONSE = 'Invalid exchange rates: response doesn\'t contain rates';
-const ERROR_RATES = 'Invalid exchange rates: one or more rates are not numbers';
+const ERROR_RESPONSE = 'Invalid exchange rates: missing rates in response';
+const ERROR_RATES = 'Invalid exchange rates: one or more rates are not numeric';
 
 const parseRates = (res: unknown) => {
   if (typeof res !== 'object' || res === null || !('data' in res)) {
@@ -36,7 +36,7 @@ export const getExchangeRates = async (requestOptions?: RequestInit) => {
   const response = await fetch(API_URL, requestOptions);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch exchange rates: ${response.statusText}`);
+    throw new Error(`Exchange rates request failed (status ${String(response.status)}).`);
   }
 
   const rates = parseRates(await response.json());

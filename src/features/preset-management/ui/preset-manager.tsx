@@ -50,7 +50,7 @@ export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, onDel
       <Button
         size="icon"
         variant="default"
-        aria-label="Add a preset"
+        aria-label="New preset"
         className="cursor-pointer"
         onClick={() => setFormType('create')}
       >
@@ -67,7 +67,7 @@ export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, onDel
         <Button
           size="icon"
           variant="outline"
-          aria-label="Rename the preset"
+          aria-label="Rename preset"
           className="cursor-pointer"
           onClick={() => setFormType('update')}
         >
@@ -77,7 +77,7 @@ export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, onDel
         <Button
           size="icon"
           variant="outline"
-          aria-label="Delete the preset"
+          aria-label="Delete preset"
           className="cursor-pointer"
           onClick={() => {
             presetDeleted(activePresetId);

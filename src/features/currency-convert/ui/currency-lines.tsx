@@ -123,7 +123,7 @@ export const CurrencyLines = ({ rates, isRatesLoading, converterId }: Props) => 
             })}
             onCurrencyChange={(newCurrency) => {
               if (usedCurrencies.has(newCurrency)) {
-                toast.error(`Currency ${newCurrency} is already used.`);
+                toast.error(`Already added: ${newCurrency}.`);
                 return;
               }
               onCurrencyChange({
