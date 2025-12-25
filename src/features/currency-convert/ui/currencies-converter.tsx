@@ -14,9 +14,15 @@ import { RatesFetchDate } from './rates-fetch-date';
 import { CurrencyLineAdd } from './currency-line-add';
 import { CurrencyLines } from './currency-lines';
 
+type Props = {
+  id?: string;
+  className?: string;
+};
 
-
-export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) => {
+export const CurrenciesConverter: FC<Props> = ({
+  id,
+  className,
+}) => {
   const [
     rates,
     isRatesLoading,
@@ -30,6 +36,7 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
     $ratesFetchedAt,
     ratesInited,
   ] as const);
+
   useEffect(() => {
     initRates();
   }, [initRates]);
@@ -38,7 +45,7 @@ export const CurrenciesConverter: FC<{ className?: string }> = ({ className }) =
     <div className={className}>
       <RatesError hasData={rates !== undefined} errorMessage={ratesError} />
       <RatesFetchDate date={ratesFetchedAt} isLoading={isRatesLoading} />
-      <CurrencyLines rates={rates} isRatesLoading={isRatesLoading} />
+      <CurrencyLines converterId={id} rates={rates} isRatesLoading={isRatesLoading} />
       {rates !== undefined && (
         <CurrencyLineAdd
           className="w-full"

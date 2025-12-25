@@ -48,22 +48,35 @@ const recalculateLines = (lines: Line[], rates: Rates) => lines.reduce<Line[]>(
 );
 
 const LINES_STORAGE_KEY = 'converter-lines';
+const getLinesStorageKey = (id?: string) => (
+  id ? `${LINES_STORAGE_KEY}-${id}` : LINES_STORAGE_KEY
+);
 
-const getLinesFromStorage = (): Line[] => {
-  const data = getStorageData(LINES_STORAGE_KEY);
+const getLinesFromStorage = (id?: string): Line[] => {
+  const data = getStorageData(getLinesStorageKey(id));
   if (!Array.isArray(data)) return [];
   return data.filter(isValidLine);
 };
 
-const saveLinesInStorageFx = createEffect((lines?: Line[]) => {
-  setStorageData(LINES_STORAGE_KEY, lines);
+const saveLinesInStorageFx = createEffect(({ lines, converterId }: {lines?: Line[], converterId?: string}) => {
+  setStorageData(getLinesStorageKey(converterId), lines);
 });
 
-const getLinesFx = createEffect((rates?: Rates) => {
-  const lines = getLinesFromStorage();
-  if (lines.length === 0) return [{ currency: DEFAULT_CURRENCY_FIAT, amount: 0 }];
-  return rates ? recalculateLines(lines, rates) : lines;
-});
+const getLinesFx = createEffect(
+  ({
+    rates,
+    converterId,
+    defaultLines = [{ currency: DEFAULT_CURRENCY_FIAT, amount: 0 }],
+  }: {
+    rates?: Rates;
+    converterId?: string;
+    defaultLines?: Line[];
+  } = {}) => {
+    const lines = getLinesFromStorage(converterId);
+    if (lines.length === 0) return defaultLines;
+    return rates ? recalculateLines(lines, rates) : lines;
+  },
+);
 
 const $lines = createStore<Line[] | undefined>(undefined, { skipVoid: false })
   .on(getLinesFx.doneData, (_, lines) => lines);
@@ -76,7 +89,8 @@ const $usedCurrencies = combine(
 const lineAdded = createEvent<Rates>();
 sample({
   clock: lineAdded,
-  source: [$usedCurrencies, $lines] as const,
+  source: [$usedCurrencies, $lines, getLinesFx.pending] as const,
+  filter: ([, , isLoading]) => !isLoading,
   fn: ([usedCurrencies, lines = []], rates) => {
     if (lines.length === 0) return [{ currency: DEFAULT_CURRENCY_FIAT, amount: 1 }];
 
@@ -118,8 +132,8 @@ const currencyChanged = createEvent<{
 }>();
 sample({
   clock: currencyChanged,
-  source: [$lines, $usedCurrencies] as const,
-  filter: ([, usedCurrencies], payload) => !usedCurrencies.has(payload.newCurrency),
+  source: [$lines, $usedCurrencies, getLinesFx.pending] as const,
+  filter: ([, usedCurrencies, isLoading], payload) => !usedCurrencies.has(payload.newCurrency) && !isLoading,
   fn: ([lines = []], payload) => lines.map((l) => {
     if (l.currency !== payload.line.currency) return l;
 
@@ -157,33 +171,70 @@ $lines.on(amountChangedDebounced, (lines = [], payload) => lines.map((l) => {
   };
 }));
 
-const ratesUpdated = createEvent<{
-  rates?: Rates;
-}>();
-// first load (init)
+const $converterId = createStore<string | undefined>(undefined, { skipVoid: false })
+  .reset(getLinesFx.failData);
+
+const converterDeleted = createEvent<{ converterId: string }>();
 sample({
-  clock: ratesUpdated,
-  source: $lines,
-  filter: (lines) => !lines?.length,
-  fn: (_, payload) => payload.rates,
+  clock: converterDeleted,
+  fn: ({ converterId }) => ({ lines: undefined, converterId }),
+  target: saveLinesInStorageFx,
+});
+sample({
+  clock: converterDeleted,
+  source: $converterId,
+  filter: (currentConverterId, { converterId }) => currentConverterId === converterId,
+  fn: () => undefined,
+  target: $converterId,
+});
+
+const converterUpdated = createEvent<{
+  rates?: Rates;
+  converterId?: string;
+}>();
+
+const isLinesReady = (
+  currentLines: Line[] | undefined,
+  newConverterId: string | undefined,
+  previousConverterId: string | undefined,
+) => currentLines !== undefined && newConverterId === previousConverterId;
+
+// init or switch converter
+sample({
+  clock: converterUpdated,
+  source: [$lines, $converterId] as const,
+  filter: ([lines, converterId], payload) => !isLinesReady(lines, payload.converterId, converterId),
+  fn: ([prevLines, prevConverterId], payload) => {
+    if (prevConverterId !== undefined || !prevLines?.length) return payload;
+    return { ...payload, defaultLines: [...prevLines] };
+  },
   target: getLinesFx,
 });
-// subsequent updates
+// recalculate current converter lines
 sample({
-  clock: ratesUpdated,
-  source: $lines,
-  filter: (lines, { rates }) => rates !== undefined && lines !== undefined && lines.length > 1,
-  fn: (lines = [], { rates }) => {
-    if (typeof rates !== 'object') return lines;
-    return recalculateLines(lines, rates);
+  clock: converterUpdated,
+  source: [$lines, $converterId] as const,
+  filter: ([lines, converterId], payload) => payload.rates !== undefined && isLinesReady(lines, payload.converterId, converterId),
+  fn: ([lines = []], payload) => {
+    if (typeof payload.rates !== 'object') return lines;
+    return recalculateLines(lines, payload.rates);
   },
   target: $lines,
+});
+
+// update current converter id (must run AFTER init/switch decision)
+sample({
+  clock: converterUpdated,
+  fn: ({ converterId }) => converterId,
+  target: $converterId,
 });
 
 const linesChangedDebounced = debounce($lines, 1000);
 sample({
   clock: linesChangedDebounced,
-  filter: (lines) => lines !== undefined,
+  source: $converterId,
+  filter: (_converterId, lines) => lines !== undefined,
+  fn: (converterId, lines) => ({ lines, converterId }),
   target: saveLinesInStorageFx,
 });
 
@@ -193,7 +244,8 @@ export {
   lineReordered,
   currencyChanged,
   amountChanged,
-  ratesUpdated,
+  converterUpdated,
+  converterDeleted,
   $lines,
   $usedCurrencies,
 };
