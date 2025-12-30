@@ -28,14 +28,14 @@ export const CurrencySelect = ({ currencies, currency, onSelectCurrency }: Props
       <Button
         variant="outline"
         role="combobox"
-        className="min-w-26 justify-between"
+        className="justify-between max-w-1/4 w-22"
       >
         {currency ?? 'Select currency'}
         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </Button>
     </PopoverTrigger>
 
-    <PopoverContent className="min-w-26 p-0" align="end">
+    <PopoverContent className="p-0 max-w-xs" align="end">
       <Command>
         <CommandInput placeholder="Search currencies" className="h-9" />
         <CommandList>

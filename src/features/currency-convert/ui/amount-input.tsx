@@ -45,7 +45,7 @@ export const AmountInput = ({
         value={displayAmount}
         onChange={handleChange}
         aria-label="Amount"
-        className="pr-10 w-full min-w-px"
+        className="pr-10 w-full min-w-px text-xs font-mono"
       />
       {displayAmount && (
         <button

@@ -39,7 +39,7 @@ const CurrencyLineContent = memo<Omit<Props, 'className'> & {
   <>
     <Button
       variant="ghost"
-      size="icon"
+      size="icon-xs"
       className="cursor-grab touch-none shrink-0"
       aria-label="Reorder row"
       title="Reorder"
@@ -118,7 +118,7 @@ export const CurrencyLine = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={cn('flex space-x-2', className, isDragging && 'opacity-50')}
+      className={cn('flex items-center space-x-1 sm:space-x-2', className, isDragging && 'opacity-50')}
     >
       <CurrencyLineContent
         {...props}
