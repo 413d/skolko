@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { CircleX } from 'lucide-react';
+
 import { cn, Input } from '@/shared/ui';
+
+import { createNumberFormatter } from '../lib/format';
 
 type Props = {
   value: number;
@@ -8,47 +11,43 @@ type Props = {
   className?: string;
 };
 
-const parseAmount = (value: string): number => {
-  const num = Number(value);
-  return Number.isFinite(num) && num >= 0 ? num : 0;
-};
+const formatter = createNumberFormatter();
 
 export const AmountInput = ({
   value,
   onChange,
   className,
 }: Props) => {
-  const [amount, setAmount] = useState(value);
+  const [displayAmount, setDisplayAmount] = useState(formatter.format(value));
 
   useEffect(() => {
-    setAmount(value);
+    setDisplayAmount(formatter.format(value));
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newAmount = parseAmount(e.target.value);
-    setAmount(newAmount);
-    onChange(newAmount);
+    const rawValue = e.target.value;
+    const filteredValue = rawValue.replace(/[^\d.,]/g, '');
+    setDisplayAmount(filteredValue);
+    const newValue = formatter.parse(filteredValue);
+    onChange(newValue);
   };
 
   const handleClear = () => {
-    setAmount(0);
+    setDisplayAmount('');
     onChange(0);
   };
 
   return (
     <div className={cn('relative', className)}>
       <Input
-        type="number"
         inputMode="decimal"
-        step={0.0001}
-        min={0}
         placeholder="0"
-        value={amount || ''}
+        value={displayAmount}
         onChange={handleChange}
         aria-label="Amount"
         className="pr-10 w-full min-w-px"
       />
-      {amount > 0 && (
+      {displayAmount && (
         <button
           type="button"
           aria-label="Clear amount"
