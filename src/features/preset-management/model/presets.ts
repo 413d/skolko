@@ -37,16 +37,16 @@ const saveActivePresetIdInStorageFx = createEffect((presetId: PresetId | undefin
   setStorageData(ACTIVE_PRESET_STORAGE_KEY, presetId);
 });
 
-const presetCreated = createEvent<Pick<Preset, 'name'>>();
+const createPresetFx = createEffect<Preset['name'], Preset>((name) => {
+  return { id: createPresetId(), name };
+});
+
 const presetRenamed = createEvent<Preset>();
 const presetDeleted = createEvent<PresetId>();
 const presetSelected = createEvent<PresetId | undefined>();
 
 const $presets = createStore<Preset[]>(getPresetsFromStorage())
-  .on(presetCreated, (presets, { name }) => presets.concat({
-    id: createPresetId(),
-    name,
-  }))
+  .on(createPresetFx.doneData, (presets, preset) => presets.concat(preset))
   .on(presetRenamed, (presets, { id, name }) =>
     presets.map((p) => (p.id === id ? { ...p, name } : p)),
   )
@@ -80,11 +80,6 @@ sample({
     if (!previousPresets) return currentPresetId;
     if (nextPresets.length === 0) return undefined;
 
-    // select on created preset
-    if (nextPresets.length > previousPresets.length) {
-      return nextPresets[nextPresets.length - 1].id;
-    }
-
     // validate current preset id on deleted preset
     return nextPresets.find(preset => preset.id === currentPresetId)?.id;
   },
@@ -94,7 +89,7 @@ sample({
 export {
   $presets,
   $activePresetId,
-  presetCreated,
+  createPresetFx,
   presetRenamed,
   presetDeleted,
   presetSelected,

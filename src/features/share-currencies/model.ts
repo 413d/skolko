@@ -1,66 +1,8 @@
-import { useSyncExternalStore } from 'react';
+import { useState, useCallback } from 'react';
 
 import type { SharedCurrency } from './types';
 
 const CURRENCY_PARAM_KEY = 'c';
-
-export const useSharedCurrencies = () => useSyncExternalStore<SharedCurrency[]>(
-  (onStoreChange) => {
-    if (typeof window === 'undefined' || typeof history === 'undefined') {
-      return () => void 0;
-    }
-
-    const notify = () => onStoreChange();
-
-    const handlePopState = () => {
-      notify();
-    };
-
-    const originalPushState = history.pushState.bind(history);
-    const originalReplaceState = history.replaceState.bind(history);
-
-    history.pushState = (...args) => {
-      originalPushState.apply(history, args);
-      notify();
-    };
-
-    history.replaceState = (...args) => {
-      originalReplaceState.apply(history, args);
-      notify();
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      history.pushState = originalPushState;
-      history.replaceState = originalReplaceState;
-    };
-  },
-  () => {
-    if (typeof window === 'undefined') {
-      return [];
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    const sharedCurrenciesParam = params.getAll(CURRENCY_PARAM_KEY);
-
-    if (sharedCurrenciesParam.length > 0) {
-      return sharedCurrenciesParam.map((param) => {
-        const [code, amountStr] = param.split(':');
-        const amount = amountStr ? Number(amountStr) : undefined;
-
-        return {
-          code: code,
-          amount: amount === undefined || isNaN(amount) ? undefined : amount,
-        };
-      });
-    }
-
-    return [];
-  },
-  () => [],
-);
 
 export const createURLWithSharedCurrencies = (sharedCurrencies: SharedCurrency[]) => {
   if (typeof window === 'undefined') {
@@ -76,4 +18,53 @@ export const createURLWithSharedCurrencies = (sharedCurrencies: SharedCurrency[]
   });
 
   return `${window.location.pathname}?${params.toString()}`;
+};
+
+const normalizeAmount = (rawValue: string) => {
+  const normalized = rawValue.replace(',', '.').trim();
+  if (!normalized) return undefined;
+
+  const parsed = Number.parseFloat(normalized);
+  if (Number.isNaN(parsed)) return undefined;
+
+  return parsed;
+};
+
+const getSharedCurrenciesFromURL = (): SharedCurrency[] => {
+  if (typeof window === 'undefined' || !window.location.search) return [];
+
+  return new URLSearchParams(window.location.search)
+    .getAll(CURRENCY_PARAM_KEY)
+    .map((param) => {
+      const [code, amountStr] = param.split(':');
+      const amount = amountStr ? normalizeAmount(amountStr) : undefined;
+
+      return {
+        code,
+        amount,
+      };
+    });
+};
+
+export const clearSharedCurrenciesFromURL = () => {
+  if (typeof window === 'undefined') return;
+
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has(CURRENCY_PARAM_KEY)) return;
+
+  params.delete(CURRENCY_PARAM_KEY);
+  const nextSearch = params.toString();
+  const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}`;
+  window.history.replaceState({}, '', nextUrl);
+};
+
+export const useSharedCurrencies = () => {
+  const [sharedCurrencies, setSharedCurrencies] = useState<SharedCurrency[]>(getSharedCurrenciesFromURL());
+
+  const clearSharedCurrencies = useCallback(() => {
+    clearSharedCurrenciesFromURL();
+    setSharedCurrencies([]);
+  }, []);
+
+  return [sharedCurrencies, clearSharedCurrencies] as const;
 };
