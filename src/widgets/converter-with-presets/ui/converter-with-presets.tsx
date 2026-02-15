@@ -3,6 +3,8 @@ import { useEffect, type FC } from 'react';
 import { CurrenciesConverter, useConverterActions, useCurrentCurrencies, useTempCurrencies } from '@/features/currency-convert';
 import { PresetManager, usePreset } from '@/features/preset-management';
 import { ShareCurrenciesButton, useSharedCurrencies } from '@/features/share-currencies';
+import { Button } from '@/shared/ui';
+import { ListRestart } from 'lucide-react';
 
 type ConverterWithPresetsProps = {
   className?: string;
@@ -36,27 +38,46 @@ export const ConverterWithPresets: FC<ConverterWithPresetsProps> = ({ className 
 
   const onSelectPreset = (presetId?: string) => {
     if (isTempCurrencyMode) {
-      clearTempCurrencies({ converterId: presetId });
+      clearTempCurrencies({ converterId: presetId ?? preset });
     }
-    setPreset(presetId);
+
+    if (presetId !== undefined) {
+      setPreset(presetId);
+    }
   };
 
   const onDeletePreset = (presetId: string) => {
     onConverterDeleted({ converterId: presetId });
   };
 
+  const presetToShow = isTempCurrencyMode ? undefined : preset;
+
   return (
     <div className={className}>
       <PresetManager
-        activePresetId={isTempCurrencyMode ? undefined : preset}
+        activePresetId={presetToShow}
         onCreatePreset={onCreatePreset}
         onSelectPreset={onSelectPreset}
         onDeletePreset={onDeletePreset}
         formForced={isTempCurrencyMode}
         className="mb-4 w-full"
       />
-      <CurrenciesConverter className="w-full mt-4" id={preset} />
-      {!isTempCurrencyMode && <Share className="mt-4 w-full" />}
+      <CurrenciesConverter className="w-full mt-4" id={presetToShow} />
+      {isTempCurrencyMode ? (
+        <Button
+          variant="destructive"
+          size="lg"
+          aria-label="Reset shared currencies"
+          title="Reset shared currencies"
+          className="mt-4 w-full"
+          onClick={() => clearTempCurrencies({ converterId: preset })}
+        >
+          <ListRestart />
+          Reset shared currencies
+        </Button>
+      ) : (
+        <Share className="mt-4 w-full" />
+      )}
     </div>
   );
 };

@@ -281,6 +281,7 @@ sample({
 
 const tempLinesCleared = createEvent<{ converterId?: string }>();
 $tempMode.on(tempLinesCleared, () => false);
+$lines.on(tempLinesCleared, () => undefined);
 sample({
   clock: tempLinesCleared,
   source: $converterId,
