@@ -171,6 +171,8 @@ $lines.on(amountChangedDebounced, (lines = [], payload) => lines.map((l) => {
   };
 }));
 
+const $tempMode = createStore(false);
+
 const $converterId = createStore<string | undefined>(undefined, { skipVoid: false })
   .reset(getLinesFx.failData);
 
@@ -202,8 +204,10 @@ const isLinesReady = (
 // init or switch converter
 sample({
   clock: converterUpdated,
-  source: [$lines, $converterId] as const,
-  filter: ([lines, converterId], payload) => !isLinesReady(lines, payload.converterId, converterId),
+  source: [$lines, $converterId, $tempMode] as const,
+  filter: ([lines, converterId, isTempMode], payload) => (
+    !isTempMode && !isLinesReady(lines, payload.converterId, converterId)
+  ),
   fn: ([prevLines, prevConverterId], payload) => {
     if (prevConverterId !== undefined || !prevLines?.length) return payload;
     return { ...payload, defaultLines: [...prevLines] };
@@ -213,8 +217,10 @@ sample({
 // recalculate current converter lines
 sample({
   clock: converterUpdated,
-  source: [$lines, $converterId] as const,
-  filter: ([lines, converterId], payload) => payload.rates !== undefined && isLinesReady(lines, payload.converterId, converterId),
+  source: [$lines, $converterId, $tempMode] as const,
+  filter: ([lines, converterId, isTempMode], payload) => (
+    payload.rates !== undefined && (isTempMode || isLinesReady(lines, payload.converterId, converterId))
+  ),
   fn: ([lines = []], payload) => {
     if (typeof payload.rates !== 'object') return lines;
     return recalculateLines(lines, payload.rates);
@@ -232,10 +238,55 @@ sample({
 const linesChangedDebounced = debounce($lines, 1000);
 sample({
   clock: linesChangedDebounced,
-  source: $converterId,
-  filter: (_converterId, lines) => lines !== undefined,
-  fn: (converterId, lines) => ({ lines, converterId }),
+  source: [$converterId, $tempMode] as const,
+  filter: ([, isTempMode], lines) => lines !== undefined && !isTempMode,
+  fn: ([converterId], lines) => ({ lines, converterId }),
   target: saveLinesInStorageFx,
+});
+
+const tempLinesProvided = createEvent<Line[]>();
+$tempMode.on(tempLinesProvided, (_, lines) => {
+  if (!Array.isArray(lines) || lines.length === 0) return;
+  return true;
+});
+sample({
+  clock: tempLinesProvided,
+  source: $tempMode,
+  filter: (isTempMode, lines) => isTempMode && Array.isArray(lines) && lines.length > 0,
+  fn: (_, lines) => lines,
+  target: $lines,
+});
+
+const tempLinesApplied = createEvent<{ converterId: string }>();
+const tempLinesShouldBeSaved = createEvent<{ converterId: string }>();
+
+sample({
+  clock: tempLinesApplied,
+  source: $tempMode,
+  filter: (isTempMode) => isTempMode,
+  fn: (_, payload) => payload,
+  target: tempLinesShouldBeSaved,
+});
+
+$tempMode.on(tempLinesShouldBeSaved, () => false);
+$converterId.on(tempLinesShouldBeSaved, (_, { converterId }) => converterId);
+sample({
+  clock: tempLinesShouldBeSaved,
+  source: $lines,
+  filter: (lines) => lines !== undefined,
+  fn: (lines, { converterId }) => ({ lines, converterId }),
+  target: saveLinesInStorageFx,
+});
+
+
+const tempLinesCleared = createEvent<{ converterId?: string }>();
+$tempMode.on(tempLinesCleared, () => false);
+$lines.on(tempLinesCleared, () => undefined);
+sample({
+  clock: tempLinesCleared,
+  source: $converterId,
+  fn: (currentConverterId, payload) => ({ converterId: payload.converterId ?? currentConverterId }),
+  target: converterUpdated,
 });
 
 export {
@@ -246,6 +297,10 @@ export {
   amountChanged,
   converterUpdated,
   converterDeleted,
+  tempLinesProvided,
+  tempLinesApplied,
+  tempLinesCleared,
   $lines,
   $usedCurrencies,
+  $tempMode,
 };

@@ -4,40 +4,54 @@ import { CirclePlus, Pencil, Trash2 } from 'lucide-react';
 
 import { Button, cn } from '@/shared/ui';
 
-import { presetCreated, presetDeleted, presetRenamed } from '../model/presets';
+import { createPresetFx, presetDeleted, presetRenamed } from '../model/presets';
 
 import { PresetSelect } from './preset-select';
 import { PresetForm } from './preset-form';
 
 type Props = {
   activePresetId: string | undefined;
-  onSelectPreset: (id: string) => void;
+  onSelectPreset: (id: string | undefined) => void;
   onDeletePreset?: (id: string) => void;
+  onCreatePreset?: (id: string) => void;
+  formForced?: boolean;
   className?: string;
 };
 
-export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, onDeletePreset, className }) => {
-  const [createPreset, renamePreset] = useUnit([
-    presetCreated,
+export const PresetManager: FC<Props> = ({
+  activePresetId,
+  onSelectPreset,
+  onDeletePreset,
+  onCreatePreset,
+  formForced,
+  className,
+}) => {
+  const [createPreset, renamePreset, deletePreset] = useUnit([
+    createPresetFx,
     presetRenamed,
     presetDeleted,
   ] as const);
 
   const [formType, setFormType] = useState<'create' | 'update'>();
 
-  if (formType !== undefined) {
+  if (formType !== undefined || formForced) {
+    const type = formForced
+      ? (activePresetId ? 'update' : 'create')
+      : formType;
     return (
       <PresetForm
         key={activePresetId ?? 'new'}
-        id={formType === 'update' ? activePresetId : undefined}
+        id={type === 'update' ? activePresetId : undefined}
         className={className}
-        onClose={() => setFormType(undefined)}
+        onClose={formForced ? (() => onSelectPreset(activePresetId)) : (() => setFormType(undefined))}
         onSubmit={(name) => {
-          if (formType === 'update') {
+          if (type === 'update') {
             if (!activePresetId) return;
             renamePreset({ id: activePresetId, name });
           } else {
-            createPreset({ name });
+            void createPreset(name).then((preset) => {
+              onCreatePreset?.(preset.id);
+            });
           }
           setFormType(undefined);
         }}
@@ -80,7 +94,7 @@ export const PresetManager: FC<Props> = ({ activePresetId, onSelectPreset, onDel
           aria-label="Delete preset"
           className="cursor-pointer"
           onClick={() => {
-            presetDeleted(activePresetId);
+            deletePreset(activePresetId);
             onDeletePreset?.(activePresetId);
           }}
         >
