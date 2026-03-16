@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
 
 interface ImportMetaEnv {
   readonly VITE_APP_TITLE: string
+  readonly VITE_THEME_COLOR_DARK: string
+  readonly VITE_THEME_COLOR_LIGHT: string
   readonly VITE_EXCHANGE_RATES_API_URL: string
   readonly VITE_EXCHANGE_RATES_CACHE_TTL?: string
 }

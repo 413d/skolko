@@ -1,24 +1,23 @@
 import { Moon, Sun } from 'lucide-react';
-
 import { Button } from '@/shared/ui';
-
 import { useTheme } from '../model';
 
 export const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
 
-  const isDarkTheme = theme === 'dark';
+  const isDark = theme === 'dark';
+  const nextTheme = isDark ? 'light' : 'dark';
+  const label = `Theme: ${theme}. Switch to ${nextTheme}.`;
 
   return (
     <Button
       variant="outline"
       size="icon"
-      onClick={() => setTheme(isDarkTheme ? 'light' : 'dark')}
-      onDoubleClick={() => setTheme('system')}
-      aria-label={isDarkTheme ? 'Use light theme' : 'Use dark theme'}
-      title={isDarkTheme ? 'Use light theme' : 'Use dark theme'}
+      onClick={() => setTheme(nextTheme)}
+      aria-label={label}
+      title={label}
     >
-      {isDarkTheme ? <Sun /> : <Moon />}
+      {isDark ? <Sun /> : <Moon />}
     </Button>
   );
 };

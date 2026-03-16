@@ -40,12 +40,18 @@ export const AmountInput = ({
   return (
     <div className={cn('relative', className)}>
       <Input
+        type="text"
         inputMode="decimal"
+        enterKeyHint="done"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
         placeholder="0"
         value={displayAmount}
         onChange={handleChange}
         aria-label="Amount"
-        className="pr-10 w-full min-w-px text-xs font-mono"
+        className="pr-10 w-full min-w-px text-base font-mono sm:text-sm"
       />
       {displayAmount && (
         <button

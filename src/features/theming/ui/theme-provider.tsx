@@ -1,52 +1,43 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-
 import { getStorageData, setStorageData } from '@/shared/lib/storage';
-
-import { ThemeProviderContext, type Theme } from '../model';
+import {
+  ThemeProviderContext,
+  resolveTheme,
+  THEMES,
+  THEME_COLORS,
+  THEME_STORAGE_KEY,
+  type Theme,
+} from '../model';
 
 type Props = {
   children: ReactNode;
-  defaultTheme?: Theme;
-  storageKey?: string;
 }
 
-export const ThemeProvider = ({
-  children,
-  defaultTheme = 'system',
-  storageKey = 'ui-theme',
-  ...props
-}: Props) => {
-  const [theme, setTheme] = useState<Theme>(
-    () => getStorageData(storageKey) ?? defaultTheme,
+export const ThemeProvider = ({ children }: Props) => {
+  const [theme, setThemeState] = useState<Theme>(
+    () => resolveTheme(getStorageData(THEME_STORAGE_KEY)),
   );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      root.classList.add(systemTheme);
-      return;
-    }
-
+    root.classList.remove(...THEMES);
     root.classList.add(theme);
+    root.dataset.theme = theme;
+    window.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLORS[theme]);
   }, [theme]);
 
   const state = useMemo(() => ({
     theme,
-    setTheme: (theme: Theme) => {
-      setStorageData(storageKey, theme);
-      setTheme(theme);
+    setTheme: (nextTheme: Theme) => {
+      setStorageData(THEME_STORAGE_KEY, nextTheme);
+      setThemeState(nextTheme);
     },
-  }), [theme, storageKey]);
+  }), [theme]);
 
   return (
-    <ThemeProviderContext.Provider {...props} value={state}>
+    <ThemeProviderContext.Provider value={state}>
       {children}
     </ThemeProviderContext.Provider>
   );

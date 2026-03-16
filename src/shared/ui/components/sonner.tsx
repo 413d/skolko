@@ -10,6 +10,18 @@ import { Toaster as Sonner, type ToasterProps } from 'sonner';
 export const Toaster = ({ ...props }: ToasterProps) => (
   <Sonner
     className="toaster group"
+    offset={{
+      top: 'max(16px, calc(var(--safe-area-top) + 12px))',
+      right: '16px',
+      bottom: 'max(16px, calc(var(--safe-area-bottom) + 12px))',
+      left: '16px',
+    }}
+    mobileOffset={{
+      top: 'max(12px, calc(var(--safe-area-top) + 8px))',
+      right: '12px',
+      bottom: 'max(12px, calc(var(--safe-area-bottom) + 8px))',
+      left: '12px',
+    }}
     icons={{
       success: <CircleCheckIcon className="size-4" />,
       info: <InfoIcon className="size-4" />,
