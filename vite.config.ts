@@ -4,12 +4,19 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const normalizeBasePath = (basePath?: string) => {
+  if (!basePath) return '/';
+
+  const normalized = basePath.startsWith('/') ? basePath : `/${basePath}`;
+  return normalized.endsWith('/') ? normalized : `${normalized}/`;
+};
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd());
+  const env = loadEnv(mode, process.cwd(), '');
 
   const APP_NAME = env.VITE_APP_TITLE || 'Skolko';
-  const BASE_PATH = env.REPO_NAME || '/';
+  const BASE_PATH = normalizeBasePath(env.BASE_URL || env.REPO_NAME);
   const APP_THEME_COLOR = env.VITE_THEME_COLOR_DARK;
   const APP_BACKGROUND_COLOR = env.VITE_THEME_COLOR_LIGHT;
 

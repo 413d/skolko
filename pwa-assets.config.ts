@@ -10,6 +10,7 @@ import { loadEnv } from 'vite';
 const root = process.cwd();
 
 const env = loadEnv(process.env.MODE ?? 'production', root, '');
+const basePath = env.BASE_URL || '/';
 
 const themeDarkColor = env.VITE_THEME_COLOR_DARK;
 const themeLightColor = env.VITE_THEME_COLOR_LIGHT;
@@ -68,7 +69,7 @@ const iosStartupDevices = [
 
 export default defineConfig({
   headLinkOptions: {
-    basePath: '/',
+    basePath,
   },
   images: ['public/skolko.svg'],
   preset: combinePresetAndAppleSplashScreens(
