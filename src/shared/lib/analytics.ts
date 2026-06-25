@@ -1,3 +1,5 @@
+import { createEffect, sample, type Event } from 'effector';
+
 type UmamiTracker = {
   track(eventName: string, data?: Record<string, unknown>): void;
   identify(data: Record<string, unknown>): void;
@@ -40,3 +42,29 @@ export const identifySession: UmamiTracker['identify'] = (data) => {
   if (!SITE_ID || !window.umami) return;
   window.umami.identify(data);
 };
+
+type TrackPayload = {
+  name: string;
+  data?: Record<string, unknown>;
+};
+
+export const analyticsTrackFx = createEffect(
+  ({ name, data }: TrackPayload): void => {
+    trackEvent(name, data);
+  },
+);
+
+export function bindAnalytics<T>(
+  clock: Event<T>,
+  name: string,
+  mapFn?: (payload: T) => Record<string, unknown>,
+): void {
+  sample({
+    clock,
+    fn: (payload): TrackPayload => ({
+      name,
+      data: mapFn ? mapFn(payload) : undefined,
+    }),
+    target: analyticsTrackFx,
+  });
+}
