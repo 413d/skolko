@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_THEME_COLOR_LIGHT: string
   readonly VITE_EXCHANGE_RATES_API_URL: string
   readonly VITE_EXCHANGE_RATES_CACHE_TTL?: string
+  readonly VITE_UMAMI_SITE_ID?: string
 }
 
 interface ImportMeta {
