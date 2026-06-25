@@ -1,6 +1,7 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { debounce } from 'patronum';
 
+import { bindAnalytics } from '@/shared/lib/analytics';
 import { getRandomInt, roundTo } from '@/shared/lib/math';
 import { getStorageData, setStorageData } from '@/shared/lib/storage';
 
@@ -87,6 +88,7 @@ const $usedCurrencies = combine(
 );
 
 const lineAdded = createEvent<Rates>();
+bindAnalytics(lineAdded, 'currency_added');
 sample({
   clock: lineAdded,
   source: [$usedCurrencies, $lines, getLinesFx.pending] as const,
@@ -115,6 +117,9 @@ sample({
 });
 
 const lineDeleted = createEvent<Line>();
+bindAnalytics(lineDeleted, 'currency_removed', (line) => ({
+  currency: line.currency.toUpperCase(),
+}));
 $lines.on(lineDeleted, (state = [], line) => state.filter((l) => l.currency !== line.currency));
 
 const lineReordered = createEvent<{ from: number; to: number }>();
@@ -130,6 +135,10 @@ const currencyChanged = createEvent<{
   newCurrency: Line['currency'],
   rates: Rates,
 }>();
+bindAnalytics(currencyChanged, 'currency_changed', (payload) => ({
+  from: payload.line.currency.toUpperCase(),
+  to: payload.newCurrency.toUpperCase(),
+}));
 sample({
   clock: currencyChanged,
   source: [$lines, $usedCurrencies, getLinesFx.pending] as const,

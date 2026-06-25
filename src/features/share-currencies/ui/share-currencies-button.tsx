@@ -3,6 +3,7 @@ import { Share } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { appConfig } from '@/shared/config';
+import { trackEvent } from '@/shared/lib/analytics';
 import { checkClipboardSupport, copyToClipboard } from '@/shared/lib/clipboard';
 import { Button } from '@/shared/ui';
 
@@ -37,6 +38,8 @@ export const ShareCurrenciesButton: FC<Props> = ({ currencies, size = 'icon', cl
       } else {
         toast.error('Sharing is not supported on this device.');
       }
+      // analytics: trackEvent — no Effector unit
+      trackEvent('currencies_shared');
     } catch (error) {
       console.error('Error sharing currencies:', error);
       toast.error('Could not share currencies.');

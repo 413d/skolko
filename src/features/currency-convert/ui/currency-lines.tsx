@@ -18,6 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 
+import { trackEvent } from '@/shared/lib/analytics';
 import { useCopy } from '../lib/copy';
 
 import {
@@ -133,7 +134,11 @@ export const CurrencyLines = ({ rates, isRatesLoading, converterId }: Props) => 
               });
             }}
             onDelete={() => !isRatesLoading && onDeleteLine(v)}
-            onCopy={canCopy ? (() => copy(`${String(v.amount)} ${v.currency}`)) : undefined}
+            onCopy={canCopy ? (() => {
+              copy(`${String(v.amount)} ${v.currency}`);
+              // analytics: trackEvent — no Effector unit
+              trackEvent('value_copied', { currency: v.currency.toUpperCase() });
+            }) : undefined}
           />
         ))}
       </SortableContext>

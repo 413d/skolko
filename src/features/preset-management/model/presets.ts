@@ -1,6 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { debounce, previous } from 'patronum';
 
+import { bindAnalytics } from '@/shared/lib/analytics';
 import { getStorageData, setStorageData } from '@/shared/lib/storage';
 
 import { createPresetId, type Preset, type PresetId } from '@/entities/preset';
@@ -44,6 +45,9 @@ const createPresetFx = createEffect<Preset['name'], Preset>((name) => {
 const presetRenamed = createEvent<Preset>();
 const presetDeleted = createEvent<PresetId>();
 const presetSelected = createEvent<PresetId | undefined>();
+bindAnalytics(presetSelected, 'preset_selected', (id) => ({
+  preset_id: id ?? 'none',
+}));
 
 const $presets = createStore<Preset[]>(getPresetsFromStorage())
   .on(createPresetFx.doneData, (presets, preset) => presets.concat(preset))
