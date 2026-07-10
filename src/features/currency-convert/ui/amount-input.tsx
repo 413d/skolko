@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CircleX } from 'lucide-react';
 
 import { cn, Input } from '@/shared/ui';
@@ -19,17 +19,23 @@ export const AmountInput = ({
   className,
 }: Props) => {
   const [displayAmount, setDisplayAmount] = useState(formatter.format(value));
+  const [focused, setFocused] = useState(false);
 
-  useEffect(() => {
-    setDisplayAmount(formatter.format(value));
-  }, [value]);
+  const effectiveDisplayAmount = focused
+    ? displayAmount
+    : formatter.format(value);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value;
-    const filteredValue = rawValue.replace(/[^\d.,]/g, '');
-    setDisplayAmount(filteredValue);
-    const newValue = formatter.parse(filteredValue);
-    onChange(newValue);
+    const filtered = e.target.value.replace(/[^\d.,]/g, '');
+    setDisplayAmount(filtered);
+    onChange(formatter.parse(filtered));
+  };
+
+  const handleFocus = () => setFocused(true);
+
+  const handleBlur = () => {
+    setFocused(false);
+    setDisplayAmount(formatter.format(value));
   };
 
   const handleClear = () => {
@@ -48,12 +54,14 @@ export const AmountInput = ({
         autoCapitalize="off"
         spellCheck={false}
         placeholder="0"
-        value={displayAmount}
+        value={effectiveDisplayAmount}
         onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         aria-label="Amount"
         className="pr-10 w-full min-w-px text-base font-mono sm:text-sm"
       />
-      {displayAmount && (
+      {effectiveDisplayAmount && (
         <button
           type="button"
           aria-label="Clear amount"
