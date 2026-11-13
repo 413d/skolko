@@ -332,11 +332,11 @@ export const POPULAR_PAIRS = [
     toName: 'Tether',
     kind: 'crypto',
     description:
-      'Bitcoin to Tether is one of the most traded crypto-to-stablecoin pairs on digital asset ' +
-      'exchanges, allowing traders to move between bitcoin and a dollar-pegged stablecoin without ' +
-      'leaving the crypto ecosystem. Tether (USDT) is designed to maintain a 1:1 value with the US dollar, ' +
-      'letting holders preserve purchasing power during market downturns without converting back to ' +
-      'bank-held fiat. It is especially favored on exchanges that operate without direct USD fiat banking.',
+      'Bitcoin to Tether connects bitcoin with the dollar-pegged stablecoin USDT, letting market ' +
+      'participants move value between BTC and a dollar proxy without leaving digital asset platforms. ' +
+      'Tether (USDT) is designed to maintain a 1:1 value with the US dollar, letting holders preserve ' +
+      'purchasing power during market downturns without converting back to bank-held fiat. That makes it ' +
+      'useful on exchanges that operate without direct USD fiat banking.',
   },
   {
     rank: 23,
