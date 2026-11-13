@@ -39,7 +39,7 @@ export const PRD_HERO_LEAD =
   'Looking for the most popular currency pairs to convert? Explore commonly used fiat ' +
   'currency and cryptocurrency combinations from around the world.';
 
-export const PRD_HERO_CTA_TARGET = '?from=USD&to=EUR';
+export const PRD_HERO_CTA_TARGET = '?c=USD:1&c=EUR';
 
 export const PRD_ABOUT_HEADING = 'A Free Currency and Cryptocurrency Converter';
 
@@ -444,7 +444,7 @@ export async function verifySeoBuild(options = {}) {
         const item = items[i];
         const expectedPair = PRD_ALL_PAIRS[i];
         if (item.position !== i + 1) positionsValid = false;
-        const expectedUrl = `${origin}${basePath}?from=${expectedPair.from}&to=${expectedPair.to}`;
+        const expectedUrl = `${origin}${basePath}?c=${expectedPair.from}:1&c=${expectedPair.to}`;
         if (item.url !== expectedUrl) urlsValid = false;
       }
 
@@ -492,13 +492,13 @@ export async function verifySeoBuild(options = {}) {
 
   // Hero CTA link
   const normalizedAppPath = normalizeBasePath(basePath);
-  const expectedHeroHref = `${normalizedAppPath}?from=USD&to=EUR`;
+  const expectedHeroHref = `${normalizedAppPath}?c=USD:1&c=EUR`;
   const escapedHeroHref = expectedHeroHref.replaceAll('&', '&amp;');
-  check('Content', 'Hero CTA button points to ?from=USD&to=EUR',
+  check('Content', 'Hero CTA button points to ?c=USD:1&c=EUR',
     landingHtml.includes(`href="${escapedHeroHref}"`) ||
     landingHtml.includes(`href="${expectedHeroHref}"`) ||
-    landingHtml.includes(`href="?from=USD&amp;to=EUR"`) ||
-    landingHtml.includes(`href="?from=USD&to=EUR"`),
+    landingHtml.includes(`href="?c=USD:1&amp;c=EUR"`) ||
+    landingHtml.includes(`href="?c=USD:1&c=EUR"`),
     `Hero CTA button href not found. Expected href to include "${expectedHeroHref}"`);
 
   // Extract all pair cards from the ordered list
@@ -582,7 +582,7 @@ export async function verifySeoBuild(options = {}) {
     if (itemList?.itemListElement) {
       for (const item of itemList.itemListElement) {
         if (typeof item.url === 'string') {
-          const match = item.url.match(/[?&]from=([^&]+)&to=([^&]+)/);
+          const match = item.url.match(/[?&]c=([^:]+):1&c=([^&]+)/);
           if (match) {
             const [, from, to] = match;
             if (!knownSymbolSet.has(from)) unknownSymbols.push(`${from} in JSON-LD`);
@@ -615,12 +615,12 @@ export async function verifySeoBuild(options = {}) {
     const card = parsedCards[i];
     const expectedPair = PRD_ALL_PAIRS[i];
     if (!expectedPair) continue;
-    const expectedHref = `${basePath}?from=${expectedPair.from}&to=${expectedPair.to}`;
+    const expectedHref = `${basePath}?c=${expectedPair.from}:1&c=${expectedPair.to}`;
     if (card.href !== expectedHref) {
       invalidLinks.push(`Rank ${card.rank}: expected href "${expectedHref}", got "${card.href}"`);
     }
   }
-  check('Links', 'All 30 conversion links have valid ?from=&to= format with base path',
+  check('Links', 'All 30 conversion links have valid ?c=FROM:1&c=TO format with base path',
     invalidLinks.length === 0,
     `Invalid conversion links:\n  ${invalidLinks.join('\n  ')}`);
 

@@ -13,7 +13,7 @@ const PAGE_DESCRIPTION =
   'Explore 30 popular fiat and cryptocurrency conversion pairs. Discover commonly used ' +
   'currency combinations and convert currencies instantly with Skolko.';
 const LANDING_PATH = '/popular-currency-pairs/';
-const HERO_PATH = '?from=USD&to=EUR';
+const HERO_PATH = '?c=USD:1&c=EUR';
 
 /** Escapes text-node content. Quotes stay literal so copy reads unchanged. */
 const escapeText = (value) => String(value)
@@ -32,7 +32,7 @@ function normalizeBasePath(basePath) {
 
 const renderPair = (pair, appPath) => {
   const ticker = `${pair.from}/${pair.to}`;
-  const href = escapeAttribute(`${appPath}?from=${pair.from}&to=${pair.to}`);
+  const href = escapeAttribute(`${appPath}?c=${pair.from}:1&c=${pair.to}`);
   return `            <li class="pair-card">
               <span class="pair-rank">${pair.rank}</span>
               <div class="pair-body">
@@ -397,7 +397,7 @@ export function generateLandingPageHtml({ origin, basePath = '/', isStaging = fa
           position: pair.rank,
           name: `${pair.from}/${pair.to} — ${pair.fromName} to ${pair.toName}`,
           description: pair.description,
-          url: `${siteOrigin}${appPath}?from=${pair.from}&to=${pair.to}`,
+          url: `${siteOrigin}${appPath}?c=${pair.from}:1&c=${pair.to}`,
         })),
       },
       {

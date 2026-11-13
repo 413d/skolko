@@ -54,12 +54,12 @@ export function generateLlmsTxt(originOrOptions, basePathArg) {
 
   const fiatList = POPULAR_PAIRS
     .filter((p) => p.kind === 'fiat')
-    .map((p) => `- [${p.from}/${p.to}](${mainUrl}?from=${p.from}&to=${p.to}): ${p.fromName} to ${p.toName}`)
+    .map((p) => `- [${p.from}/${p.to}](${mainUrl}?c=${p.from}:1&c=${p.to}): ${p.fromName} to ${p.toName}`)
     .join('\n');
 
   const cryptoList = POPULAR_PAIRS
     .filter((p) => p.kind === 'crypto')
-    .map((p) => `- [${p.from}/${p.to}](${mainUrl}?from=${p.from}&to=${p.to}): ${p.fromName} to ${p.toName}`)
+    .map((p) => `- [${p.from}/${p.to}](${mainUrl}?c=${p.from}:1&c=${p.to}): ${p.fromName} to ${p.toName}`)
     .join('\n');
 
   return `# Skolko

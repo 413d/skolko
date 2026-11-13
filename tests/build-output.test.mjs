@@ -111,7 +111,7 @@ test('prepare: production run writes landing page, robots.txt, llms.txt, and sit
     html.includes(`<link rel="canonical" href="${ORIGIN}/popular-currency-pairs/" />`),
     'expected canonical built from the configured production origin',
   );
-  assert.ok(html.includes('href="/?from=USD&amp;to=EUR"'), 'expected app links on the root base path');
+  assert.ok(html.includes('href="/?c=USD:1&amp;c=EUR"'), 'expected app links on the root base path');
 
   const robots = await readFile(robotsFile, 'utf8');
   assert.ok(robots.includes('User-agent: Googlebot'), 'expected Googlebot allow block');
@@ -141,7 +141,7 @@ test('prepare: staging run writes noindex landing page, blocking robots.txt, and
 
   const html = await readFile(path.join(targetDir, 'popular-currency-pairs', 'index.html'), 'utf8');
   assert.ok(html.includes('<meta name="robots" content="noindex, nofollow" />'), 'staging must be noindex');
-  assert.ok(html.includes('href="/skolko/?from=USD&amp;to=EUR"'), 'expected app links under the staging base path');
+  assert.ok(html.includes('href="/skolko/?c=USD:1&amp;c=EUR"'), 'expected app links under the staging base path');
   assert.ok(
     html.includes(`<link rel="canonical" href="${ORIGIN}/popular-currency-pairs/" />`),
     'canonical must stay on the production origin in staging',

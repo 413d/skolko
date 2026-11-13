@@ -192,7 +192,7 @@ test('hero contains the PRD heading, introduction and primary CTA', () => {
   );
   assert.ok(hero.includes('Whether you'), 'expected the PRD introduction copy');
   assert.ok(
-    hero.includes('<a class="button" href="/?from=USD&amp;to=EUR">Open Currency Converter</a>'),
+    hero.includes('<a class="button" href="/?c=USD:1&amp;c=EUR">Open Currency Converter</a>'),
     'expected the primary CTA to the default conversion',
   );
 });
@@ -232,7 +232,7 @@ test('every pair renders rank, ticker, names, description and conversion link', 
       `${pair.from}/${pair.to} description is missing`,
     );
     assert.ok(
-      productionHtml.includes(`href="/?from=${pair.from}&amp;to=${pair.to}"`),
+      productionHtml.includes(`href="/?c=${pair.from}:1&amp;c=${pair.to}"`),
       `${pair.from}/${pair.to} conversion link is missing`,
     );
   }
@@ -296,11 +296,11 @@ test('header and footer link back to the converter root', () => {
 
 test('conversion links respect a non-root base path', () => {
   assert.ok(
-    stagingHtml.includes('href="/skolko/?from=EUR&amp;to=USD"'),
+    stagingHtml.includes('href="/skolko/?c=EUR:1&amp;c=USD"'),
     'expected the EUR/USD link under /skolko/',
   );
   assert.ok(
-    stagingHtml.includes('<a class="button" href="/skolko/?from=USD&amp;to=EUR">Open Currency Converter</a>'),
+    stagingHtml.includes('<a class="button" href="/skolko/?c=USD:1&amp;c=EUR">Open Currency Converter</a>'),
     'expected the hero CTA under /skolko/',
   );
   assert.ok(
@@ -311,11 +311,11 @@ test('conversion links respect a non-root base path', () => {
 
 test('an empty base path falls back to the site root', () => {
   assert.ok(
-    emptyBasePathHtml.includes('href="/?from=EUR&amp;to=USD"'),
+    emptyBasePathHtml.includes('href="/?c=EUR:1&amp;c=USD"'),
     'expected the EUR/USD link at the root',
   );
   assert.ok(
-    emptyBasePathHtml.includes('<a class="button" href="/?from=USD&amp;to=EUR">Open Currency Converter</a>'),
+    emptyBasePathHtml.includes('<a class="button" href="/?c=USD:1&amp;c=EUR">Open Currency Converter</a>'),
     'expected the hero CTA at the root',
   );
 });
@@ -357,7 +357,7 @@ test('JSON-LD ItemList mirrors all 30 pairs in rank order', () => {
     assert.ok(item.name.includes(pair.fromName), `item ${pair.rank} name is missing the source name`);
     assert.ok(item.name.includes(pair.toName), `item ${pair.rank} name is missing the target name`);
     assert.strictEqual(item.description, pair.description);
-    assert.strictEqual(item.url, `${ORIGIN}/?from=${pair.from}&to=${pair.to}`);
+    assert.strictEqual(item.url, `${ORIGIN}/?c=${pair.from}:1&c=${pair.to}`);
   }
 });
 
@@ -375,7 +375,7 @@ test('JSON-LD SoftwareApplication describes Skolko without invented ratings', ()
 
 test('JSON-LD URLs respect the base path', () => {
   const itemList = jsonLdGraph(stagingHtml)[1];
-  assert.strictEqual(itemList.itemListElement[0].url, `${ORIGIN}/skolko/?from=EUR&to=USD`);
+  assert.strictEqual(itemList.itemListElement[0].url, `${ORIGIN}/skolko/?c=EUR:1&c=USD`);
   assert.strictEqual(jsonLdGraph(stagingHtml)[2].url, `${ORIGIN}/skolko/`);
 });
 
