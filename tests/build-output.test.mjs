@@ -232,4 +232,10 @@ test('build: production build emits all SEO artifacts in dist/', async (t) => {
     robots.includes(`Sitemap: ${DEFAULT_SITE_ORIGIN}/sitemap.xml`),
     'dist robots.txt must advertise the production sitemap',
   );
+
+  const sw = await readFile(path.join(dist, 'sw.js'), 'utf8');
+  assert.ok(
+    sw.includes('popular-currency-pairs'),
+    'service worker must exclude popular-currency-pairs from navigation fallback',
+  );
 });

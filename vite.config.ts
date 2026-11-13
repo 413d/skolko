@@ -90,6 +90,7 @@ export default defineConfig(({ mode }) => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
           globIgnores: ['**/pwa/**', '**/splash/**'],
+          navigateFallbackDenylist: [/popular-currency-pairs/],
           runtimeCaching: [
             {
             // Cache exchange rates API requests with Network First strategy
