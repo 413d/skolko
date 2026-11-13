@@ -52,6 +52,16 @@ const AppContent = () => {
           <ConvertPage />
         </ErrorBoundary>
       </main>
+      <footer className="app-footer border-t border-secondary/80 py-4 text-center text-xs text-muted-foreground">
+        <div className="mx-auto flex max-w-4xl items-center justify-center gap-4 px-2">
+          <a
+            href={`${appConfig.baseUrl}popular-currency-pairs/`}
+            className="underline hover:text-foreground transition-colors"
+          >
+            Popular Currency Pairs
+          </a>
+        </div>
+      </footer>
       <Toaster theme={theme} />
     </div>
   );
