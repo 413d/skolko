@@ -33,7 +33,7 @@ jobs:
       - name: Extract repository name
         run: echo "REPO_NAME=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
       - name: Build
-        run: npm run build
+        run: npm run build:light
         env:
           BASE_URL: /${{ env.REPO_NAME }}/
           VITE_APP_TITLE: ${{ vars.VITE_APP_TITLE }}
