@@ -360,11 +360,12 @@ export const POPULAR_PAIRS = [
     toName: 'Tether',
     kind: 'crypto',
     description:
-      'Ethereum to Tether allows traders and investors to move between ether and the Tether stablecoin ' +
-      'on crypto exchanges, effectively converting ETH value into dollar-equivalent holdings without ' +
-      'exiting the blockchain ecosystem. This pair is popular on exchanges that do not support direct ' +
-      'fiat withdrawal, as USDT remains pegged to the US dollar and can be used across many platforms ' +
-      'for trading and payments. It is one of the highest-volume pairs in both centralized and decentralized exchange markets.',
+      'Ethereum to Tether gives holders of ether a way to convert to a dollar-pegged asset without ' +
+      'leaving the Ethereum network, since USDT is issued natively on Ethereum as an ERC-20 token. ' +
+      'This makes it practical for users of Ethereum-based protocols to settle obligations, receive ' +
+      'proceeds from smart contracts, or hold stable value between transactions entirely on-chain. ' +
+      'Developers and traders who work within the Ethereum ecosystem often keep USDT balances ready ' +
+      'to move value quickly between wallets and applications without an intermediate fiat step.',
   },
   {
     rank: 25,
@@ -388,11 +389,13 @@ export const POPULAR_PAIRS = [
     toName: 'Tether',
     kind: 'crypto',
     description:
-      'Solana to Tether lets traders exchange SOL for a USD-pegged stablecoin on digital asset platforms ' +
-      'without converting all the way back to fiat currency held at a bank. This is useful for investors ' +
-      'who want to reduce exposure to Solana price fluctuations while keeping funds within the crypto ' +
-      'ecosystem ready for rapid redeployment into other opportunities. The pair is active on both ' +
-      'centralized exchanges and decentralized protocols that support Solana-based assets alongside Tether.',
+      'Solana to Tether is a natural pairing within the Solana ecosystem, where the network\'s high ' +
+      'throughput and low transaction fees make frequent stablecoin movement inexpensive and fast. ' +
+      'USDT is available on Solana as a native SPL token, allowing participants in Solana\'s ' +
+      'applications—trading venues, lending protocols, and payment tools—to convert SOL to a stable ' +
+      'unit of value and redeploy it within the same environment. This is particularly useful for ' +
+      'active traders and developers who want to manage risk in SOL-denominated positions without ' +
+      'routing funds off-chain.',
   },
   {
     rank: 27,

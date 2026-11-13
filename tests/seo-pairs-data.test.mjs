@@ -92,13 +92,77 @@ test('COINBASE_KNOWN_SYMBOLS has exactly 24 unique entries', () => {
   assert.strictEqual(unique.size, 24, `expected 24 unique tickers, got ${unique.size}`);
 });
 
-// --- required shape fields are present ---
-test('every pair has required shape fields', () => {
+// --- pair identity in PRD order (full 30-entry sequence) ---
+const EXPECTED_PAIRS = [
+  // fiat
+  { from: 'EUR', to: 'USD' },
+  { from: 'USD', to: 'JPY' },
+  { from: 'USD', to: 'CNY' },
+  { from: 'GBP', to: 'USD' },
+  { from: 'USD', to: 'CAD' },
+  { from: 'AUD', to: 'USD' },
+  { from: 'USD', to: 'CHF' },
+  { from: 'USD', to: 'HKD' },
+  { from: 'USD', to: 'SGD' },
+  { from: 'USD', to: 'INR' },
+  { from: 'EUR', to: 'GBP' },
+  { from: 'USD', to: 'KRW' },
+  { from: 'USD', to: 'MXN' },
+  { from: 'USD', to: 'NZD' },
+  { from: 'EUR', to: 'JPY' },
+  { from: 'EUR', to: 'CHF' },
+  { from: 'USD', to: 'BRL' },
+  { from: 'USD', to: 'ZAR' },
+  { from: 'USD', to: 'TRY' },
+  { from: 'USD', to: 'PLN' },
+  // crypto
+  { from: 'BTC', to: 'USD' },
+  { from: 'BTC', to: 'USDT' },
+  { from: 'ETH', to: 'USD' },
+  { from: 'ETH', to: 'USDT' },
+  { from: 'SOL', to: 'USD' },
+  { from: 'SOL', to: 'USDT' },
+  { from: 'BTC', to: 'USDC' },
+  { from: 'ETH', to: 'USDC' },
+  { from: 'XRP', to: 'USD' },
+  { from: 'ETH', to: 'BTC' },
+];
+
+test('pairs appear in PRD-specified from/to order across all 30 slots', () => {
+  for (let i = 0; i < 30; i++) {
+    const pair = POPULAR_PAIRS[i];
+    const expected = EXPECTED_PAIRS[i];
+    assert.strictEqual(
+      pair.from,
+      expected.from,
+      `index ${i} (rank ${pair.rank}): expected from=${expected.from}, got ${pair.from}`,
+    );
+    assert.strictEqual(
+      pair.to,
+      expected.to,
+      `index ${i} (rank ${pair.rank}): expected to=${expected.to}, got ${pair.to}`,
+    );
+  }
+});
+
+// --- required shape fields are present and correctly typed ---
+test('every pair has required shape fields with correct types', () => {
+  const stringFields = ['from', 'to', 'fromName', 'toName', 'description', 'kind'];
   for (const pair of POPULAR_PAIRS) {
-    for (const field of ['rank', 'from', 'to', 'fromName', 'toName', 'description', 'kind']) {
+    assert.strictEqual(
+      typeof pair.rank,
+      'number',
+      `pair rank ${pair.rank} has non-number rank field`,
+    );
+    for (const field of stringFields) {
       assert.ok(
         field in pair,
         `pair rank ${pair.rank} is missing field "${field}"`,
+      );
+      assert.strictEqual(
+        typeof pair[field],
+        'string',
+        `pair rank ${pair.rank} field "${field}" is not a string (got ${typeof pair[field]})`,
       );
     }
   }
