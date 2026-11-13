@@ -20,11 +20,27 @@ import {
 const execFileAsync = promisify(execFile);
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const VERIFY_SCRIPT = path.join(REPO_ROOT, 'scripts', 'verify-seo-page.mjs');
-const DIST_DIR = path.join(REPO_ROOT, 'dist');
 
 async function makeTempDir(t) {
   const dir = await mkdtemp(path.join(os.tmpdir(), 'skolko-verify-test-'));
   t.after(() => rm(dir, { recursive: true, force: true }));
+  return dir;
+}
+
+/**
+ * Builds a complete production artifact fixture in a temp directory.
+ *
+ * Tests must not read the repository `dist/`, because the build test suite
+ * rebuilds it in parallel and Vite wipes the directory mid-run.
+ */
+async function makeProductionFixture(t, env = {}) {
+  const dir = await makeTempDir(t);
+  const productionEnv = { ...env };
+  delete productionEnv.BASE_URL;
+  delete productionEnv.REPO_NAME;
+  delete productionEnv.STAGING;
+  await prepareSeoFiles({ targetDir: dir, env: productionEnv });
+  await seedMockAssets(dir);
   return dir;
 }
 
@@ -72,8 +88,10 @@ test('verify: parseCliArgs correctly handles flags, paths, and values', () => {
 // Production and Staging verification runs
 // ============================================================================
 
-test('verify: passes 100% against production build in dist/', async () => {
-  const result = await verifySeoBuild({ targetDir: DIST_DIR, isStaging: false });
+test('verify: passes 100% against a production build', async (t) => {
+  const dir = await makeProductionFixture(t);
+
+  const result = await verifySeoBuild({ targetDir: dir, isStaging: false });
   assert.strictEqual(result.success, true, `Expected all checks to pass, got failures: ${result.errors.join('; ')}`);
   assert.strictEqual(result.failedCount, 0);
   assert.ok(result.passedCount >= 85, `Expected >= 85 checks, got ${result.passedCount}`);
@@ -264,8 +282,10 @@ test('verify: detects corrupt or invalid JSON-LD block', async (t) => {
 // CLI invocation tests
 // ============================================================================
 
-test('verify CLI: exits 0 on valid dist directory', async () => {
-  const { stdout, stderr } = await execFileAsync('node', [VERIFY_SCRIPT, DIST_DIR]);
+test('verify CLI: exits 0 on a valid production build', async (t) => {
+  const dir = await makeProductionFixture(t);
+
+  const { stdout, stderr } = await execFileAsync('node', [VERIFY_SCRIPT, dir]);
   assert.ok(stdout.includes('ALL PRD ACCEPTANCE CHECKS PASSED'));
   assert.strictEqual(stderr, '');
 });
